@@ -1,0 +1,141 @@
+/* AddProjectModal.module.css */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure it's above other content */
+}
+
+.modalContent {
+    background-color: white;
+    display: flex;
+    border-radius: 8px;
+    width: 80%; /* Set a fixed width */
+    max-width: 1000px; /* Maximum width */
+    height: 600px; /* Set a fixed height */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Hide overflow to prevent scrollbars */
+}
+
+.modalLeft {
+    flex: 1;
+    background-color: white;
+    border-right: 1px solid #b9b0b0;
+    padding: 20px;
+    margin-top: 50px;
+}
+
+.navList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navItem {
+    padding: 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: teal;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.navItem:hover {
+    background-color: rgb(72, 153, 153);
+}
+
+.active {
+    background-color: #2563eb; /* Blue background for active step */
+    color: #1d1c1c;
+}
+
+.modalRight {
+    flex: 3;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto; /* Enable scrolling for content */
+}
+
+.modalRight h2 {
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: black; /* Dark text color */
+}
+
+.modalButtons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.modalButtons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #2563eb; /* Blue background for Next and Back */
+    color: white;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.modalButtons button:disabled {
+    background-color: #a1a1aa; /* Gray background for disabled buttons */
+    cursor: not-allowed;
+}
+
+.modalButtons button:hover:not(:disabled) {
+    background-color: #1d4ed8; /* Darker blue on hover */
+}
+
+.closeButton {
+    background-color: #f44336; /* Red background */
+    color: #301212;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    align-self: flex-end;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.closeButton:hover {
+    background-color: #d32f2f; /* Darker red on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modalContent {
+        flex-direction: column;
+        width: 90%; /* Adjust width for smaller screens */
+        height: auto; /* Adjust height for smaller screens */
+    }
+
+    .modalLeft {
+        border-right: none;
+        border-bottom: 1px solid #130606;
+    }
+
+    .modalButtons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .modalButtons button {
+        width: 100%;
+    }
+
+    .closeButton {
+        width: 100%;
+    }
+}
