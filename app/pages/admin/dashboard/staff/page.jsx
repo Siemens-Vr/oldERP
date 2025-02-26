@@ -14,6 +14,7 @@ const StaffPage = () => {
   const [deleting, setDeleting] = useState(null); // Stores the UUID of the staff being deleted
   const searchParams = useSearchParams();
   const q = searchParams.get('q') || '';
+  const [projects, setProjects] =useState([])
 
   useEffect(() => {
     const fetchStaffs = async () => {
@@ -41,6 +42,26 @@ const StaffPage = () => {
     });
   };
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${config.baseURL}/projects`);
+        const data = await response.json();
+        setProjects(data);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
+    };
+  
+    fetchProjects();
+  }, []);
+  
+
+  const getProjectName = (uuid) => {
+    const project = projects.find((proj) => proj.uuid === uuid);
+    return project ? project.name : 'Unknown Project';
+  };
+  
   const handleDeleteStaff = async (uuid, fullName) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -116,7 +137,7 @@ const StaffPage = () => {
                         </div>
                       </td>
                       <td>{staff.email}</td>
-                      <td>{staff.project}</td>
+                      <td>{getProjectName(staff.project)}</td>
                       <td>{staff.phone}</td>
                       <td>{staff.idNo}</td>
                       <td>

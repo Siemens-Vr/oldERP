@@ -16,40 +16,15 @@
 .modalContent {
     background-color: white;
     display: flex;
-    border-radius: 8px;
-    width: 80%; /* Set a fixed width */
+    border-radius: 18px;
+    width:25%; /* Set a fixed width */
     max-width: 1000px; /* Maximum width */
-    height: 600px; /* Set a fixed height */
+    height: 550px; /* Set a fixed height */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden; /* Hide overflow to prevent scrollbars */
 }
 
-.modalLeft {
-    flex: 1;
-    background-color: white;
-    border-right: 1px solid #b9b0b0;
-    padding: 20px;
-    margin-top: 50px;
-}
 
-.navList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.navItem {
-    padding: 15px;
-    cursor: pointer;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    background-color: teal;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.navItem:hover {
-    background-color: rgb(72, 153, 153);
-}
 
 .active {
     background-color: #2563eb; /* Blue background for active step */
@@ -58,7 +33,7 @@
 
 .modalRight {
     flex: 3;
-    padding: 20px;
+    padding: 40px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -75,50 +50,71 @@
 .modalButtons {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    align-items: center;
+    margin-top: 490px;
+    gap: 10px; /* Spacing between buttons */
 }
 
 .modalButtons button {
-    padding: 10px 20px;
+    padding: 10px 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px; /* Rounded corners */
     cursor: pointer;
-    background-color: #2563eb; /* Blue background for Next and Back */
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Submit Button */
+.submitButton {
+    background-color: #2563eb; /* Primary Blue */
     color: white;
-    transition: background-color 0.2s ease-in-out;
 }
 
+.submitButton:hover {
+    background-color: #1e4bce;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cancel Button */
+.cancelButton {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+.cancelButton:hover {
+    background-color: #d32f2f;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Disabled State */
 .modalButtons button:disabled {
-    background-color: #a1a1aa; /* Gray background for disabled buttons */
+    background-color: #a1a1aa;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
-.modalButtons button:hover:not(:disabled) {
-    background-color: #1d4ed8; /* Darker blue on hover */
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .modalButtons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .modalButtons button {
+        width: 100%;
+    }
 }
 
-.closeButton {
-    background-color: #f44336; /* Red background */
-    color: #301212;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-    align-self: flex-end;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.closeButton:hover {
-    background-color: #d32f2f; /* Darker red on hover */
-}
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .modalContent {
         flex-direction: column;
         width: 90%; /* Adjust width for smaller screens */
-        height: auto; /* Adjust height for smaller screens */
+        height: auto; 
     }
 
     .modalLeft {

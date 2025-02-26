@@ -1,14 +1,11 @@
 "use client"
-import React, { useEffect, useReducer, useState } from 'react';
+import React, { useEffect, useReducer, useState, useRef } from 'react';
 import styles from '@/app/styles/project/project/project.module.css';
-import {
-    FaArrowLeft, FaEllipsisV, FaFolder, FaPlus, FaRegFileAlt, FaUpload
-} from "react-icons/fa";
-import {
-    MdFolder, MdOutlineFilePresent, MdOutlineCreateNewFolder,
-    MdUploadFile, MdMoreVert, MdEdit, MdDelete,
-} from "react-icons/md";
+import { FaArrowLeft, FaEllipsisV, FaRegFileAlt, FaTrash} from "react-icons/fa";
+import { MdFolder} from "react-icons/md";
 import { config } from "/config";
+import UploadDropdown from '@/app/components/uploadDropdown/uploadDropdown';
+import { useParams } from 'next/navigation';
 
 // Action Types
 const ACTION_TYPES = {
@@ -28,7 +25,7 @@ const ACTION_TYPES = {
 // Initial State
 const initialState = {
     folders: [],
-    documents: [],
+    files: [],
     currentFolder: null,
     breadcrumbs: [],
     loading: false,
@@ -196,6 +193,23 @@ function folderReducer(state, action) {
                 }
             };
         }
+        case ACTION_TYPES.DELETE_FILE:
+            return {
+                ...state,
+                currentFolder: {
+                    ...state.currentFolder,
+                    files: state.currentFolder.files.filter(file => file.id !== action.payload)
+                }
+            };
+
+        case ACTION_TYPES.DELETE_FOLDER:
+            return {
+                ...state,
+                currentFolder: {
+                    ...state.currentFolder,
+                    subfolders: state.currentFolder.subfolders.filter(folder => folder.uuid !== action.payload)
+                }
+            };
         case ACTION_TYPES.BACK_TO_PARENT:
             return {
                 ...state,
@@ -208,21 +222,47 @@ function folderReducer(state, action) {
     }
 }
 
-const Documents = ({ uuid }) => {
+const Documents = () => {
     const [state, dispatch] = useReducer(folderReducer, initialState);
     const [phases, setPhases] = useState([]);
     const [loading, setLoading] = useState()
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectedFiles, setSelectedFiles] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showActionMenu, setShowActionMenu] = useState(false);
+    const [actionMenuPosition, setActionMenuPosition] = useState({ x: 0, y: 0 });
+    const [viewUrl, setViewUrl] = useState(null);
+    const [showView, setShowView] = useState(false);
+
     const [modalStates, setModalStates] = useState({
         folderModal: false,
         fileModal: false,
         folderUploadModal: false
     });
     const [folderName, setFolderName] = useState("")
+
+    const [menuOpen, setMenuOpen] = useState(null);
+    const menuRef = useRef(null);
+
+    const params = useParams()
+    const {uuid} = params
+
     console.log('This is the folder name', folderName)
 
 
+//menu 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuOpen(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     // Fetch initial folders
     const fetchInitialFolders = async () => {
@@ -540,7 +580,98 @@ const Documents = ({ uuid }) => {
         }
     };
 
+    // const handleView = async (file) => {
+    //     try {
+    //         const viewUrl = `${config.baseURL}/documents/${file.id}`;
+    //         const newTab = window.open('', '_blank');
+    
+    //         if (!newTab) {
+    //             alert('Pop-up blocked! Please allow pop-ups for this site.');
+    //             return;
+    //         }
+    
+    //         setViewUrl(viewUrl);
+    //         setShowView(true);
+    
+    //         // Open the file URL in the new tab
+    //         newTab.location.href = viewUrl;
+    //     } catch (error) {
+    //         console.error('Error viewing file:', error);
+    //         alert('Failed to view file');
+    //     }
+    // };
+    const handleView = (file) => {
+            window.open(`${config.baseURL}/documents/view/${file.uuid}`, '_blank');
+        };
+    
+        // const handleDownload = (file) => {
+        //     window.open(`${config.baseURL}/reports/download/${file.id}`, '_blank');
+        // };
+    
+      // New function to handle file download
+      const handleDownload = async (file) => {
+        try {
+            const response = await fetch(`${config.baseURL}/download/${file.id}`);
+            if (!response.ok) throw new Error('Download failed');
 
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.documentName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            alert('Failed to download file');
+        }
+    };
+
+    //handle file delete
+    const handleDeleteFile = async (fileId) => {
+        if (!confirm('Are you sure you want to delete this file?')) return;
+        // console.log('clicked')
+
+        try {
+            const response = await fetch(`${config.baseURL}/documents/delete/${fileId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Delete failed');
+
+            dispatch({
+                type: ACTION_TYPES.DELETE_FILE,
+                payload: fileId
+            });
+        } catch (error) {
+            console.error('Error deleting file:', error);
+            alert('Failed to delete file');
+        }
+    };
+
+    // New function to handle folder deletion
+    const handleDeleteFolder = async (folder) => {
+        if (!confirm('Are you sure you want to delete this folder and all its contents?')) return;
+        
+
+        try {
+            const response = await fetch(`${config.baseURL}/folders/${folder.uuid}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) throw new Error('Delete failed');
+
+            dispatch({
+                type: ACTION_TYPES.DELETE_FOLDER,
+                payload: folder.uuid
+            });
+        } catch (error) {
+            console.error('Error deleting folder:', error);
+            alert('Failed to delete folder');
+        }
+    };
     
     // Back to Parent Folder
     const handleBackToParent = () => {
@@ -579,28 +710,58 @@ const Documents = ({ uuid }) => {
     // Render Methods
     const renderFolders = () => {
         const foldersToRender = state.currentFolder?.subfolders || [];
-        // console.log('Folders to render:', foldersToRender);
+        console.log('Folders to render:', foldersToRender);
     
         return foldersToRender.map(folder => (
+            <div key={folder.uuid} className={styles.inputDocumentCard}>
             <div 
-                key={folder.uuid} 
-                className={styles.inputDocumentCard}
+                className={styles.cardContent}
                 onClick={() => handleOpenFolder(folder, state.currentFolder)}
             >
                 <MdFolder className={styles.inputDocumentCardIcon} />
                 <h3>{folder.folderName || 'Unnamed Folder'}</h3>
             </div>
+            <button 
+                className={styles.deleteButton}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteFolder(folder);
+                }}
+            >
+                <FaTrash  size={12}/>
+            </button>
+        </div>
         ));
     };
 
     const renderFiles = () => {
         const filesToRender = state.currentFolder?.files || [];
-
+        console.log(filesToRender)
         return filesToRender.map(file => (
+       <>
             <div key={file?.id} className={styles.inputFileCard}>
-                <FaRegFileAlt className={styles.inputFileCardIcon} />
-                <span className={styles.fileName}>{file?.documentName?.split('-').pop()  || 'Unnamed Document'}</span>
-            </div>
+                <div className={styles.fileInfo}>
+                    <FaRegFileAlt className={styles.inputFileCardIcon} />
+                    <span className={styles.fileName} onClick={() => handleView(file)}>
+                        {file?.documentName?.split('-').pop() || 'Unnamed Document'}
+                    </span>
+                </div>
+                <>
+                    <div className={styles.fileMenu} ref={menuRef}>
+                    <button onClick={() => setMenuOpen(menuOpen === file.id ? null : file.id)}>
+                        <FaEllipsisV />
+                    </button>
+                    </div>
+                    {menuOpen === file.id && (
+                <div className={styles.menuDropdown}>
+                    <button onClick={() => handleView(file)}>View</button>
+                    <button onClick={() => handleDownload(file)}>Download</button>
+                    <button onClick={() => handleDeleteFile(file)}>Delete</button>
+                </div>
+                )}
+                </>
+             </div>
+             </>
         ));
     };
 
@@ -619,17 +780,7 @@ const Documents = ({ uuid }) => {
                         : 'Documents'}
                 </h2>
 
-                <div className={styles.topButtons}>
-                    <button onClick={() => setModalStates({ ...modalStates, folderModal: true })}>
-                        <FaPlus /> New Folder
-                    </button>
-                    <button onClick={() => setModalStates({ ...modalStates, folderUploadModal: true })}>
-                        <FaPlus /> Upload Folder
-                    </button>
-                    <button onClick={() => setModalStates({ ...modalStates, fileModal: true })}>
-                        <FaUpload /> Upload File
-                    </button>
-                </div>
+                <UploadDropdown setModalStates={setModalStates} />
             </div>
 
             <div className={styles.inputDocumentCardsContainer}>
@@ -638,6 +789,27 @@ const Documents = ({ uuid }) => {
             </div>
 
             {/* Modal Components would be added here */}
+
+              {/* File view Modal */}
+              {showView && (
+                <div className={styles.viewModal}>
+                    <div className={styles.viewContent}>
+                        <button 
+                            className={styles.closeView}
+                            onClick={() => setShowView(false)}
+                        >
+                            ×
+                        </button>
+                        <iframe 
+                            src={viewUrl} 
+                            title="File view"
+                            className={styles.viewFrame}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Create Folder modal */}
             {modalStates.folderModal && (
                 <div className={styles.inputDocumentModal}>
                     <div className={styles.inputDocumentModalContent}>
@@ -665,6 +837,8 @@ const Documents = ({ uuid }) => {
                 </div>
             )}
 
+            {/* Upload File modal */}
+
             {modalStates.fileModal && (
                 <div className={styles.inputDocumentModal}>
                     <div className={styles.inputDocumentModalContent}>
@@ -680,38 +854,38 @@ const Documents = ({ uuid }) => {
                 
             )}
 
-            
+            {/* upload folder modal */}
             {modalStates.folderUploadModal && (
-                            <div className={styles.inputDocumentModal}>
-                                <div className={styles.inputDocumentModalContent}>
-                                    <h3>Upload Folder</h3>
-                                    <input
-                                            type="file"
-                                            webkitdirectory=""
-                                            directory=""
-                                            multiple
-                                            onChange={handleFolderSelect}
-                                        />
-                                        {selectedFiles?.length > 0 && (
-                                            <div className={styles.fileList}>
-                                                <p>Selected files: {selectedFiles.length}</p>
-                                                <p>Folder name: {selectedFiles[0]?.webkitRelativePath.split('/')[0]}</p>
-                                            </div>
-                                        )}
-
-
-                                    <div className={styles.inputDocumentModalButtons}>
-                                        <button onClick={handleFolderUpload} disabled={!selectedFiles?.length}> Upload</button>
-                                        <button onClick={() => {
-                                            setSelectedFiles(null);
-                                            setFolderName('')
-                                            setModalStates({ ...modalStates, folderUploadModal: false })
-                                            }}>Cancel</button>
-                                    </div>
-                                </div>
+                <div className={styles.inputDocumentModal}>
+                    <div className={styles.inputDocumentModalContent}>
+                        <h3>Upload Folder</h3>
+                        <input
+                            type="file"
+                            webkitdirectory=""
+                            directory=""
+                            multiple
+                            onChange={handleFolderSelect}
+                        />
+                        {selectedFiles?.length > 0 && (
+                            <div className={styles.fileList}>
+                                <p>Selected files: {selectedFiles.length}</p>
+                                <p>Folder name: {selectedFiles[0]?.webkitRelativePath.split('/')[0]}</p>
                             </div>
-                            
                         )}
+
+
+                    <div className={styles.inputDocumentModalButtons}>
+                        <button onClick={handleFolderUpload} disabled={!selectedFiles?.length}> Upload</button>
+                        <button onClick={() => {
+                            setSelectedFiles(null);
+                            setFolderName('')
+                            setModalStates({ ...modalStates, folderUploadModal: false })
+                            }}>Cancel</button>
+                      </div>
+                    </div>
+                </div>
+            
+        )}
 
 
             </div>

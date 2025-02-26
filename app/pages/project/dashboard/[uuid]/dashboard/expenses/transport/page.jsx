@@ -3,22 +3,26 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import Pagination from "@/app/components/pagination/pagination";
-import Search from "@/app/components/search/searchFilter";
+import Search from "@/app/components/search/searchFilterTransport";
 import styles from "@/app/styles/supplier/supplier.module.css";
 import Link from "next/link";
 import { config } from "/config";
+import ActionButton from "@/app/components/actionButton/actionButton";
+import UpdateTransportPopup from  '@/app/components/transport/update';
 
 const TransportPage = () => {
   const [transport, setTransport] = useState([]);
   const [count, setCount] = useState(0);
   const params= useParams()
-  const {uuid}= params
-
+  const {uuid, id}= params
+  const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const { replace } = useRouter();
   const q = searchParams.get("q") || "";
   const page = searchParams.get("page") || 0;
   const filter = searchParams.get("filter") || "all";
+  const [selectedTransport, setSelectedTransport] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
  
 
   useEffect(() => {
@@ -30,14 +34,14 @@ const TransportPage = () => {
   }, []);
 
 
-  // const uuid = searchParams.get("uuid");
-  console.log(uuid)
+  console.log("fetching uuid:", uuid)
 
   useEffect(() => {
     fetchTransport();
   }, [q, page, filter]);
 
   const fetchTransport = async () => {
+    setLoading(true); 
     try {
       let url = `${config.baseURL}/transports/${uuid}?`;
       const params = new URLSearchParams();
@@ -61,6 +65,9 @@ const TransportPage = () => {
     } catch (error) {
       console.error("Error fetching transport items:", error);
     }
+    finally {
+      setLoading(false);
+  }
   };
 
   const handleDownloadAll = (transport) => {
@@ -83,6 +90,55 @@ const TransportPage = () => {
     });
   };
 
+  const handleView = (id) => {
+    window.location.href = `/pages/project/dashboard/${uuid}/dashboard/expenses/transport/${id}/`;
+  };
+  const handleDelete = async (id) => {
+    if (!id) {
+      console.error("Transport data is not loaded");
+      return;
+    }
+  
+    const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+  
+    if (confirmDelete) {
+      try {
+        const response = await fetch(`${config.baseURL}/transports/${id}/delete`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+  
+        if (response.ok) {
+          alert("Item deleted successfully!");
+          // Immediate navigation without state updates
+          window.location.href = `/pages/project/dashboard/${uuid}/dashboard/expenses/transport`;
+        } else {
+          throw new Error("Failed to delete item");
+        }
+      } catch (error) {
+        console.error("Error deleting item:", error);
+        alert("Failed to delete item. Please try again.");
+      }
+    }
+  };
+
+  const handleUpdateClick = (transport) => {
+    setSelectedTransport(transport);
+    setShowPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setSelectedTransport(null);
+  };
+
+  const handleSavePopup = async () => {
+    handleClosePopup();
+    await fetchTransport();
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.top}>
@@ -101,10 +157,10 @@ const TransportPage = () => {
               <td>Travel Period</td>
               <td>Travelers</td>
               <td>Date of Request</td>
-              <td>Date Received</td>
+              {/* <td>Date Received</td>
               <td>Approver</td>
               <td>Approval Date</td>
-              <td>Payment Date</td>
+              <td>Payment Date</td> */}
               <td>Action</td>
             </tr>
           </thead>
@@ -120,34 +176,13 @@ const TransportPage = () => {
                     : ""}
                 </td>
                 <td>
-                  {transport.dateReceived
-                    ? new Date(transport.dateReceived).toLocaleDateString()
-                    : ""}
-                </td>
-                <td>{transport.approver}</td>
-                <td>
-                  {transport.approvaldDate
-                    ? new Date(transport.approvaldDate).toLocaleDateString()
-                    : ""}
-                </td>
-                <td>
-                  {transport.paymentDate
-                    ? new Date(transport.paymentDate).toLocaleDateString()
-                    : ""}
-                </td>
-                <td>
-                  <div className={styles.buttons}>
-                    <button
-                      className={`${styles.button} ${styles.download}`}
-                      onClick={() => handleDownloadAll(transport)}
-                    >
-                      Download
-                    </button>
-
-                    <Link href={`/pages/project/dashboard/${uuid}/dashboard/expenses/transport/${transport.id}/`}>
-                    <button className={`${styles.button} ${styles.view}`}>View</button>
-                    </Link>
-                  </div>
+                  <ActionButton
+                    onEdit={() => handleUpdateClick(transport)}
+                    onDownload={() => handleDownloadAll(transport)}
+                    onDelete={() => handleDelete (transport.id)}
+                    onView={ () => handleView (transport.id)}
+            
+                  />
                 </td>
               </tr>
             ))}
@@ -157,6 +192,14 @@ const TransportPage = () => {
         <p className={styles.noItems}>No travel items available</p>
       )}
       <Pagination count={count} />
+
+      {showPopup && (
+        <UpdateTransportPopup
+          transport={selectedTransport}
+          onClose={handleClosePopup}
+          onSave={handleSavePopup}
+        />
+      )}
     </div>
   );
 };

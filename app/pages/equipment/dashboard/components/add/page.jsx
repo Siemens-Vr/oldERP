@@ -88,7 +88,7 @@ const AddComponent = () => {
           condition: true,
           conditionDetails: ''
         });
-        router.push('/equipment/dashboard/components');
+        router.push('/pages/equipment/dashboard/components');
       } else {
         const err = await response.json();
         alert('You have an error on the form: ' + err.message)

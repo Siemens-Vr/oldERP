@@ -70,9 +70,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
         }
     };
 
-  const handleClosePopup = () => {
-    setShowPopup(false); // This closes the popup
-  };
+
     const renderFields = () => {
         return (
             <>
@@ -97,7 +95,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             type="text"
                             placeholder="PV No"
                             name="pvNo"
-                            value={formData.pvNo}
+                            value={formData.PvNo}
                             onChange={handleChange}
                             required
                         />

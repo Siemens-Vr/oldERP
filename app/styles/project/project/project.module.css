@@ -522,14 +522,14 @@
     background-color: #1c86ee;
 }
 
-.deleteButton {
+/* .deleteButton {
     background-color: #ff6347;
     color: white;
-}
+} */
 
-.deleteButton:hover {
+/* .deleteButton:hover {
     background-color: #ff4500;
-}
+} */
 
 
 .newDeliverableForm {
@@ -1263,3 +1263,145 @@
 .addButton:hover {
     background-color: #43a047;
 }
+
+
+.fileGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+}
+
+.fileCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #182237;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    width: 140px;
+}
+
+.fileMenu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.fileMenu button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-size: 16px;
+}
+
+.menuDropdown {
+    position: absolute;
+    top: 25px;
+    right: 0;
+    background: #2c3e50;
+    border-radius: 5px;
+    padding: 5px 0;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.menuDropdown button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    text-align: left;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+}
+
+.menuDropdown button:hover {
+    background: #34495e;
+}
+
+.fileInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fileName {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    color: white;
+}
+
+.fileActions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.fileActions button {
+    padding: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.fileActions button:hover {
+    color: #000;
+}
+
+.previewModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.previewContent {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    height: 80%;
+    position: relative;
+}
+
+.previewFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.closePreview {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.deleteButton {
+    margin-left: 70px;
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c03535;
+    transition: color 0.2s;
+}
+

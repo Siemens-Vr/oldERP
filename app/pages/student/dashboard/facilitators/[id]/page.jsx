@@ -7,12 +7,16 @@ import { config } from "/config";
 const SingleFacilitatorPage = ({ params }) => {
  const [facilitator, setFacilitator] = useState(null);
 const [successMessage, setSuccessMessage] = useState('');
+const [errorMessage, setErrorMessage] = useState('');
+const [currentFacilitatorId, setCurrentFacilitatorId] = useState(null);
+  const [popupType, setPopupType] = useState(null);
 
   
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    idNo:'',
     phoneNo: '',
     gender: '',
   });
@@ -32,6 +36,7 @@ const [successMessage, setSuccessMessage] = useState('');
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
+          idNo: data.idNo,
           phoneNo: data.phoneNo,
           gender: data.gender,
 
@@ -59,6 +64,7 @@ const [successMessage, setSuccessMessage] = useState('');
 const handleSubmit = async (e) => {
   e.preventDefault();
   try {
+    console.log(formData)
     const response = await fetch(`${config.baseURL}/facilitators/${id}/update`, {
       method: 'PATCH',
       headers: {
@@ -67,6 +73,7 @@ const handleSubmit = async (e) => {
       body: JSON.stringify(formData),
     });
     if (!response.ok) {
+      
       throw new Error('Network response was not ok');
     }
     const data = await response.json();
@@ -76,6 +83,12 @@ const handleSubmit = async (e) => {
       setTimeout(() => {
       setSuccessMessage('');
     }, 2000);
+
+    setErrorMessage(data.message); // Set the success message
+
+    setTimeout(() => {
+    setErrorMessage('');
+  }, 404);
 
 
     // console.log("Update response:", data);
@@ -93,26 +106,33 @@ const handleSubmit = async (e) => {
   }
 };
 
-   const handleAddUpdateHours = async (entries) => {
-    // console.log(entries)
-    try {
-      const response = await fetch(`${config.baseURL}/facilitators/${id}/hours`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ entries }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add hours');
-      }
-      setSuccessMessage('Hours updated successfully');
-      setTimeout(() => setSuccessMessage(''), 2000);
-    } catch (error) {
-      console.error('Error updating hours:', error);
-      alert('Failed to update hours. Please try again.');
+const handleAddUpdateHours = async (entries) => {
+  // console.log(entries)
+  try {
+    const response = await fetch(`${config.baseURL}/facilitators/${id}/hours`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ entries }),
+    });
+    if (!response.ok) {
+      setErrorMessage('Failed to add Hours');
+      setTimeout(()=> setErrorMessage (''), 404);
+      // throw new Error('Failed to add hours');
     }
-  };
+    setSuccessMessage('Hours updated successfully');
+    setTimeout(() => setSuccessMessage(''), 2000);
+  } catch (error) {
+    setErrorMessage('Error updating hours:');
+    setTimeout(()=> setErrorMessage (''), 404);
+    // console.error('Error updating hours:', error);
+    setErrorMessage('Failed to update hours. Please try again.');
+    setTimeout(()=> setErrorMessage (''), 404);
+    // alert('Failed to update hours. Please try again.');
+  }
+};
+
 
   if (!facilitator) {
     return <div>Loading...</div>;
@@ -152,6 +172,13 @@ const handleSubmit = async (e) => {
             value={formData.email}
             onChange={handleChange}
           />
+          <label>ID Number</label>
+          <input
+            type="text"
+            name="idNo"
+            value={formData.idNo}
+            onChange={handleChange}
+          />
           <label>Phone</label>
           <input
             type="text"
@@ -169,25 +196,25 @@ const handleSubmit = async (e) => {
           <button type="submit">Update</button>
         </form>
 
-      <div className={styles.hoursButtons}>
-        <button onClick={() => setShowAddUpdateHours(true)}>Add Hours</button>
-        <button onClick={() => setShowViewHours(true)}>View Hours</button>
-      </div>
+        <div className={styles.hoursButtons}>
+                        <button className={styles.button} onClick={() => { setCurrentFacilitatorId(facilitator.uuid); setPopupType('addUpdate'); }}>Add Hours</button>
+                        <button className={styles.button} onClick={() => { setCurrentFacilitatorId(facilitator.uuid); setPopupType('view'); }}>View Hours</button>
+                      </div>
 
-      {showAddUpdateHours && (
-        <AddUpdateHoursPopup
-          facilitatorId={id}
-          onClose={() => setShowAddUpdateHours(false)}
-          onSubmit={handleAddUpdateHours}
-        />
-      )}
-
-      {showViewHours && (
-        <ViewHoursPopup
-          facilitatorId={id}
-          onClose={() => setShowViewHours(false)}
-        />
-      )}
+      {popupType === 'addUpdate' && (
+              <AddUpdateHoursPopup
+                facilitatorId={currentFacilitatorId}
+                onClose={() => setPopupType(null)}
+                onSubmit={(entries) => handleAddUpdateHours(currentFacilitatorId, entries)}
+              />
+            )}
+      
+            {popupType === 'view' && (
+              <ViewHoursPopup
+                facilitatorId={currentFacilitatorId}
+                onClose={() => setPopupType(null)}
+              />
+            )}
     </div>
   );
 };

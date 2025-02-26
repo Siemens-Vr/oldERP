@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import {CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
 import { config } from "/config";
 
-const Details = ({  }) => {
+const Details = () => {
   const params = useParams();
   const {uuid} = params
   console.log(uuid)

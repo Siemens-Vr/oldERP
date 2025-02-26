@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
 import styles from "@/app/styles/project/project/project.module.css";
+import { config } from "/config";
+import { useParams } from 'next/navigation';
 
-const DeliverablesManager = ({ uuid, backendUrl }) => {
+const DeliverablesManager = () => {
     const [phases, setPhases] = useState([]);
     const [deliverables, setDeliverables] = useState([]);
     const [newDeliverable, setNewDeliverable] = useState({
@@ -16,11 +18,13 @@ const DeliverablesManager = ({ uuid, backendUrl }) => {
     const [editDeliverable, setEditDeliverable] = useState(null); // Track deliverable being edited
     const [showAddModal, setShowAddModal] = useState(false);
     const [loading, setLoading] = useState(false); // New loading state
+    const params = useParams();
+    const { uuid } = params;
 
     // Fetch Phases
     const fetchPhases = async () => {
         try {
-            const response = await fetch(`${backendUrl}/phases/${uuid}`);
+            const response = await fetch(`${config.baseURL}/phases/${uuid}`);
             if (response.ok) {
                 const data = await response.json();
                 setPhases(data.phases || []);
@@ -35,7 +39,7 @@ const DeliverablesManager = ({ uuid, backendUrl }) => {
     // Fetch Deliverables
     const fetchDeliverables = async () => {
         try {
-            const response = await fetch(`${backendUrl}/deliverables/${uuid}`);
+            const response = await fetch(`${config.baseURL}/deliverables/${uuid}`);
             if (response.ok) {
                 const data = await response.json();
                 setDeliverables(Array.isArray(data) ? data : data.deliverables || []);
@@ -51,7 +55,7 @@ const DeliverablesManager = ({ uuid, backendUrl }) => {
     useEffect(() => {
         fetchPhases();
         fetchDeliverables();
-    }, [uuid, backendUrl]);
+    }, [uuid]);
 
     // Add Deliverable
     const addDeliverable = async () => {
@@ -74,7 +78,7 @@ const DeliverablesManager = ({ uuid, backendUrl }) => {
             };
 
             const response = await fetch(
-                `${backendUrl}/deliverables/${uuid}/${newDeliverable.phaseId}/`,
+                `${config.baseURL}/deliverables/${uuid}/${newDeliverable.phaseId}/`,
                 {
                     method: "POST",
                     headers: {
@@ -122,7 +126,7 @@ const DeliverablesManager = ({ uuid, backendUrl }) => {
             };
 
             const response = await fetch(
-                `${backendUrl}/deliverables/${uuid}/${editDeliverable.phaseId}/${editDeliverable.uuid}`,
+                `${config.baseURL}/deliverables/${uuid}/${editDeliverable.phaseId}/${editDeliverable.uuid}`,
                 {
                     method: "PUT",
                     headers: {
@@ -149,7 +153,7 @@ const DeliverablesManager = ({ uuid, backendUrl }) => {
     const deleteDeliverable = async (deliverableUuid, phaseId) => {
         try {
             const response = await fetch(
-                `${backendUrl}/deliverables/${uuid}/${phaseId}/${deliverableUuid}`,
+                `${config.baseURL}/deliverables/${uuid}/${phaseId}/${deliverableUuid}`,
                 { method: "DELETE" }
             );
 

@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from "react";
 import styles from "@/app/styles/project/project/project.module.css";
 import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import { config } from "/config";
+import { useParams } from 'next/navigation';
 
-const Phases = ({ uuid, backendUrl }) => {
+const Phases = () => {
     const [phases, setPhases] = useState([]);
     const [newPhase, setNewPhase] = useState({
         name: "",
@@ -16,10 +18,12 @@ const Phases = ({ uuid, backendUrl }) => {
     const [showPhaseInput, setShowPhaseInput] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [addPhaseError, setAddPhaseError] = useState("");
+    const params = useParams();
+    const { uuid } = params;
 
     const fetchPhases = async () => {
         try {
-            const response = await fetch(`${backendUrl}/phases/${uuid}`);
+            const response = await fetch(`${config.baseURL}/phases/${uuid}`);
             if (response.ok) {
                 const data = await response.json();
                 setPhases(data.phases || []);
@@ -33,9 +37,15 @@ const Phases = ({ uuid, backendUrl }) => {
 
     useEffect(() => {
         fetchPhases();
-    }, [uuid, backendUrl]);
+    }, []);
 
     const addPhase = async () => {
+        console.log("UUID in addPhase:", uuid);
+        if (!uuid) {
+            console.error("UUID is undefined.");
+            return;
+        }
+        
         if (newPhase.name.trim()) {
             setIsAdding(true);
             setAddPhaseError("");
@@ -53,7 +63,7 @@ const Phases = ({ uuid, backendUrl }) => {
                     ],
                 };
 
-                const response = await fetch(`${backendUrl}/phases/${uuid}/`, {
+                const response = await fetch(`${config.baseURL}/phases/${uuid}/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -90,7 +100,7 @@ const Phases = ({ uuid, backendUrl }) => {
     const deletePhase = async (index) => {
         const phaseToDelete = phases[index];
         try {
-            const response = await fetch(`${backendUrl}/phases/${uuid}/${phaseToDelete.uuid}`, {
+            const response = await fetch(`${config.baseURL}/phases/${uuid}/${phaseToDelete.uuid}`, {
                 method: "DELETE",
             });
 
@@ -108,7 +118,7 @@ const Phases = ({ uuid, backendUrl }) => {
     const updatePhase = async () => {
         if (editPhaseData) {
             try {
-                const response = await fetch(`${backendUrl}/phases/${uuid}/${editPhaseData.uuid}`, {
+                const response = await fetch(`${config.baseURL}/phases/${uuid}/${editPhaseData.uuid}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",

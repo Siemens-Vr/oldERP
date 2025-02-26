@@ -105,9 +105,9 @@ const SinglePage = () => {
         conditionDetails: formValues.conditionDetails,
       },
     };
-
+    console.log(payload)
     try {
-      const response = await fetch(`${config.baseURL}/borrow/${uuid}`, {
+      const response = await fetch(`${config.baseURL}/borrows/${uuid}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

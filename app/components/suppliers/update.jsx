@@ -2,8 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import styles from '@/app/styles/supplier/UpdateSupplierPopup.module.css';
 import { config } from "/config";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
+    
     // console.log(supplier)
     const [formData, setFormData] = useState({
         itemName: '',
@@ -18,17 +21,11 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
         claimNumber: '',
         accounted: '',
         dateAccounted: null,
-        project: '',
+        procurement:'',
         approvalDate: null,
         approvalName: '',
-        approvalPath: '',
-        invoiceDate:null,
-        invoiceName: '',
-        invoicePath: '',
         paymentDate:null,
-        paymentVoucherName: '',
-        paymentVoucherPath: '',
-        payment: null,
+       
     });
 
     useEffect(() => {
@@ -45,30 +42,25 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                 dateTakenToFinance: procurement.dateTakenToFinance
                     ? new Date(procurement.dateTakenToFinance).toISOString().slice(0, 16)
                     : '',
+                procurement: procurement.document || "", 
                 type: procurement.type || '',
                 PvNo: procurement.PvNo || '',
                 claimNumber: procurement.claimNumber || '',
-                accounted: procurement.accounted || '',
                 dateAccounted: procurement.dateAccounted
                     ? new Date(procurement.dateAccounted).toISOString().slice(0, 16)
                     : '',
-                project: procurement.project || '',
                 approvalDate: procurement.approvalDate
                     ? new Date(procurement.approvalDate).toISOString().slice(0, 10)
                     : '',
                 approvalName: procurement.approvalName || '',
-                approvalPath: procurement.approvalPath || '',
                 invoiceDate: procurement.invoiceDate
                     ? new Date(procurement.invoiceDate).toISOString().slice(0, 10)
                     : '',
-                invoiceName: procurement.invoiceName || '',
-                invoicePath: procurement.invoicePath || '',
                 paymentDate: procurement.paymentDate
                     ? new Date(procurement.paymentDate).toISOString().slice(0, 10)
                     : '',
-                paymentVoucherName: procurement.paymentVoucherName || '',
-                paymentVoucherPath: procurement.paymentVoucherPath || '',
-                document: null, 
+                
+               
                 
             });
         }
@@ -78,55 +70,54 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
-
-    const handleSave = async () => {
-        const formDataToSend = new FormData();
     
+    
+    const handleSave = async () => {
+        const formDataToSend = new FormData(); // Define formDataToSend first
+        
         // Append text fields, excluding the fields that should not be sent
         const excludedFields = [
             'approvalName',
             'approvalPath',
             'paymentVoucherName',
             'paymentVoucherPath',
-            'invoiceName',
             'invoicePath',
         ];
     
+        // Append all form fields except excluded ones
         Object.keys(formData).forEach((key) => {
-            if (!excludedFields.includes(key) && !['payment', 'invoice', 'approval'].includes(key)) {
+            if (!excludedFields.includes(key) && !['document'].includes(key)) {
                 formDataToSend.append(key, formData[key]);
             }
         });
     
-        // Append files if selected
-        if (formData.payment) formDataToSend.append('payment', formData.payment);
-        if (formData.invoice) formDataToSend.append('invoice', formData.invoice);
-        if (formData.approval) formDataToSend.append('approval', formData.approval);
-    
-        // Log the FormData entries before sending
-        console.log('FormData to send:');
-        for (let [key, value] of formDataToSend.entries()) {
-            console.log(`${key}:`, value);
-        }
         try {
-            const response = await fetch(`${config.baseURL}/procurements/${procurement.uuid}/update`, {
+            const url = `${config.baseURL}/procurements/${procurement.uuid}/update`;
+            console.log('Update URL:', url);
+            console.log('Form Data being sent:', Object.fromEntries(formDataToSend));
+    
+            const response = await fetch(url, {
                 method: 'PATCH',
-                body: formDataToSend, // Send FormData
+                body: formDataToSend,
             });
     
+            // Log the response
+            const responseData = await response.json();
+            console.log('Update Response:', responseData);
             if (response.ok) {
-                alert('Item updated successfully!');
-                onSave();
+               alert('Item updated successfully!');
+                await onSave(true);
             } else {
-                console.error('Failed to update supplier', await response.text());
+                console.error('Failed to update supplier', responseData);
+              alert(responseData.message || 'Failed to update the item!');
+                onSave(false);
             }
         } catch (error) {
             console.error('Error:', error);
+            alert('An unexpected error occurred. Please try again.');
+            onSave(false);
         }
     };
-    
-    
-    
 
     const renderFields = () => {
         switch (formData.type) {
@@ -139,7 +130,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                                 type="text"
                                 id="PvNo"
                                 name="PvNo"
-                                value={formData.PvNo}
+                                value={formData.PvNo }
                                 onChange={handleChange}
                                 placeholder="e.g. PV123456"
                                 required
@@ -162,22 +153,22 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
             case "Petty Cash":
                 return (
                     <div className={styles.inputGroup}>
-                        <label htmlFor="PvNo">PV No</label>
-                        <input
-                            type="text"
-                            id="PvNo"
-                            name="PvNo"
-                            value={formData.PvNo}
-                            onChange={handleChange}
-                            placeholder="e.g. PV123456"
-                            required
-                        />
-                    </div>
+                    <label htmlFor="PvNo">PV No</label>
+                    <input
+                        type="text"
+                        id="PvNo"
+                        name="PvNo"
+                        value={formData.PvNo}
+                        onChange={handleChange}
+                        placeholder="e.g. PV123456"
+                        required
+                    />
+                </div>
                 );
             case "Imprest":
                 return (
                     <>
-                        <div className={styles.inputGroup}>
+                       <div className={styles.inputGroup}>
                             <label htmlFor="PvNo">PV No</label>
                             <input
                                 type="text"
@@ -227,6 +218,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                 <div className={styles.stickyHeader}>
                     <h2>Update Supplier</h2>
                 </div>
+                <ToastContainer position="top-center" autoClose={3000} />
                 <form>
                 <div className={styles.inputGroup}>
                         <label htmlFor="itemName">Item Name</label>
@@ -285,7 +277,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             value={formData.approver}
                             onChange={handleChange}
                             placeholder="e.g. John Doe"
-                            required
+                            
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -296,7 +288,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             name="dateTakenToApprover"
                             value={formData.dateTakenToApprover}
                             onChange={handleChange}
-                            required
+                            
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -307,40 +299,8 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             name="approvalDate"
                             value={formData.approvalDate}
                             onChange={handleChange}
-                            required
+                           
                         />
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="approvalName">Approval Document</label>
-                        <div className={styles.doc}>
-                            <div className={styles.docs}>
-                                <input
-                                    type="text"
-                                    id="approvalName"
-                                    name="approvalName"
-                                    value={formData.approvalName}
-                                    onChange={handleChange}
-                                    placeholder="Approval document name"
-                                    required
-                                />
-                                {formData.approvalPath && (
-                                    <a style = {{color: 'black'}}
-                                        href={`${config.baseURL}/${formData.approvalPath}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={styles.fileLink}
-                                    >
-                                        Open File
-                                    </a>
-                                )}
-                            </div>
-                            <input
-                                type="file"
-                                id="approval"
-                                name="approval"
-                                onChange={(e) => setFormData({ ...formData, approval: e.target.files[0] })}
-                            />
-                        </div>
                     </div>
                     <div className={styles.inputGroup}>
                         <label htmlFor="dateTakenToFinance">Date Taken To Finance</label>
@@ -350,7 +310,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             name="dateTakenToFinance"
                             value={formData.dateTakenToFinance}
                             onChange={handleChange}
-                            required
+                           
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -361,40 +321,8 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             name="invoiceDate"
                             value={formData.invoiceDate}
                             onChange={handleChange}
-                            required
+                            
                         />
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="invoiceName">Invoice</label>
-                        <div className={styles.doc}>
-                        <div className={styles.docs}>
-                            <input
-                                type="text"
-                                id="invoiceName"
-                                name="invoiceName"
-                                value={formData.invoiceName}
-                                onChange={handleChange}
-                                placeholder="Invoice document name"
-                                required
-                            />
-                            {formData.invoicePath && (
-                                <a
-                                    href={`${config.baseURL}/${formData.invoicePath}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={styles.fileLink}
-                                >
-                                    Open File
-                                </a>
-                            )}
-                            </div>
-                                <input
-                                    type="file"
-                                    id="invoice"
-                                    name="invoice"
-                                    onChange={(e) => setFormData({ ...formData, invoice: e.target.files[0] })}
-                                />
-                        </div>
                     </div>
                     <div className={styles.inputGroup}>
                         <label htmlFor="paymentDate">Payment Date</label>
@@ -404,26 +332,27 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             name="paymentDate"
                             value={formData.paymentDate}
                             onChange={handleChange}
-                            required
+                           
                         />
                     </div>
 
                     <div className={styles.inputGroup}>
-                        <label htmlFor="paymentVoucherName">Payment Voucher</label>
+                        <label htmlFor="document">Document</label>
                         <div className={styles.doc}>
                             <div className={styles.docs}>
-                                <input
-                                    type="text"
-                                    id="paymentVoucherName"
-                                    name="paymentVoucherName"
-                                    value={formData.paymentVoucherName}
-                                    onChange={handleChange}
-                                    placeholder="Payment voucher name"
-                                    required
-                                />
-                                {formData.paymentVoucherPath && (
+                            <input
+                                type="text"
+                                id="procurement"
+                                name="procurement"
+                                value={formData.procurement instanceof File ? formData.procurement.name : formData.procurement ? formData.procurement.split('/').pop() : "N/A"}
+                                readOnly
+                                placeholder="Procurement document"
+                               
+                            />
+
+                                {formData.procurement && typeof formData.procurement === "string" && (
                                     <a
-                                        href={`${config.baseURL}/${formData.paymentVoucherPath}`}
+                                        href={`${config.baseURL}/${formData.procurement}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={styles.fileLink}
@@ -436,9 +365,9 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
 
                              <input
                                 type="file"
-                                id="payment"
-                                name="payment"
-                                onChange={(e) => setFormData({ ...formData, payment: e.target.files[0] })}
+                                id="procurement"
+                                name="procurement"
+                                onChange={(e) => setFormData({ ...formData, procurement: e.target.files[0] })}
                             />
                         </div>
                     </div>
@@ -450,7 +379,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             name="type"
                             value={formData.type}
                             onChange={handleChange}
-                            required
+                            
                         >
                             <option value="">Select Type</option>
                             <option value="Claim">Claim</option>
@@ -458,27 +387,7 @@ const UpdateSupplierPopup = ({ procurement, onClose, onSave }) => {
                             <option value="Petty Cash">Petty Cash</option>
                         </select>
                     </div>
-                    {/* <div className={styles.inputGroup}>
-                    <label htmlFor="project">Project</label>
-                    <select
-                        name="project"
-                        value={formData.project}
-                        onChange={handleChange}
-                        required
-                        
-                    >
-                        <option value="">Select project vote</option>
-                        <option value="SIFA">SIFA</option>
-                        <option value="Eureka">NRF-EUREKA</option>
-                        <option value ="NRF-PAMOJA">NRF-PAMOJA</option>
-                        <option value="CMU">CMU</option>
-                        <option value="Worldskills">Worldskills</option>
-                        <option value="ERASMUS">ERASMUS</option>
-                        <option value="SMSCP">SMSCP</option>
 
-
-                    </select>
-                    </div> */}
 
                     {renderFields()}
 

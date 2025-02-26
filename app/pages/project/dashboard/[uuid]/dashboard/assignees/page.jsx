@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import styles from '@/app/styles/project/project/project.module.css';
+import { config } from "/config";
 
-const Assignees = ({ uuid, backendUrl }) => {
+const Assignees = ({ uuid }) => {
     const [assignees, setAssignees] = useState([]);
     const [newAssignee, setNewAssignee] = useState({ name: '', gender: '', access: '', role: '', dateJoined: '' });
     const [showModal, setShowModal] = useState(false);
@@ -11,7 +12,7 @@ const Assignees = ({ uuid, backendUrl }) => {
 
     const fetchAssignees = async () => {
         try {
-            const response = await fetch(`${backendUrl}/assignees/${uuid}`);
+            const response = await fetch(`${config.baseURL}/assignees/${uuid}`);
             if (!response.ok) {
                 console.error(`Failed to fetch assignees: ${response.status}`);
                 return;
@@ -29,12 +30,12 @@ const Assignees = ({ uuid, backendUrl }) => {
 
 
         fetchAssignees();
-    }, [uuid, backendUrl]);
+    }, [uuid]);
 
 
     const addAssignee = async (newAssignee) => {
         try {
-            const response = await fetch(`${backendUrl}/assignees/${uuid}`, {
+            const response = await fetch(`${config.baseURL}/assignees/${uuid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ assignees: [newAssignee] }),
@@ -53,7 +54,7 @@ const Assignees = ({ uuid, backendUrl }) => {
 
     const deleteAssignee = async (assigneeId) => {
         try {
-            const response = await fetch(`${backendUrl}/assignees/${uuid}/${assigneeId}`, {
+            const response = await fetch(`${config.baseURL}/assignees/${uuid}/${assigneeId}`, {
                 method: 'DELETE',
             });
             if (response.ok) {
@@ -68,7 +69,7 @@ const Assignees = ({ uuid, backendUrl }) => {
 
     const updateAssignee = async (updatedAssignee) => {
         try {
-            const response = await fetch(`${backendUrl}/assignees/${uuid}/${updatedAssignee.uuid}`, {
+            const response = await fetch(`${config.baseURL}/assignees/${uuid}/${updatedAssignee.uuid}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedAssignee),

@@ -1,50 +1,74 @@
 "use client";
 
 import styles from '@/app/styles/supplier/singleSupplier.module.css';
-import UpdateTransportPopup from  '@/app/components/transport/update';
+import UpdateTransportPopup from '@/app/components/transport/update';
 import { useState, useEffect } from "react";
 import { config } from "/config";
+import { useRouter } from "next/navigation";
 
 const SingleTransportPage = ({ params }) => {
   const [transport, setTransport] = useState(null);
   const [selectedTransport, setSelectedTransport] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const router = useRouter();
 
-  const {  id } = params;
-  console .log(params)  
+  const { uuid, id } = params;
 
-  // Fetch transport data based on transportuuid
   const fetchTransport = async () => {
-    console.log("Fetching transport with transportUUID:", id);
-    
     if (!id) {
-      console.error("Transport UUID is undefined");
+      router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/transport`);
       return;
     }
 
     try {
       const response = await fetch(`${config.baseURL}/transports/project/${id}`);
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/transport`);
+        return;
       }
       const data = await response.json();
+      
+      console.log("Received transport data:", data); 
       setTransport(data);
     } catch (error) {
       console.error('Error fetching transport:', error);
+      router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/transport`);
     }
-    console.log("Transport data:", transport);
   };
-
-  console.log(transport)
+  // const fetchTransport = async () => {
+  //   if (!id) {
+  //     router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/transport`);
+  //     return;
+  //   }
+  
+  //   try {
+  //     const response = await fetch(`${config.baseURL}/transports/project/${id}`);
+  //     if (!response.ok) {
+  //       console.error("API responded with an error:", response.status, response.statusText);
+  //       router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/transport`);
+  //       return;
+  //     }
+  //     const data = await response.json();
+      
+  //     console.log("Received transport data:", data); // Debug log
+  //     if (!data) {
+  //       console.error("Received null or undefined data from API.");
+  //       return;
+  //     }
+  
+  //     setTransport(data);
+  //   } catch (error) {
+  //     console.error("Error fetching transport:", error);
+  //     router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/transport`);
+  //   }
+  // };
+  
   useEffect(() => {
-    if (id) {
-      fetchTransport();
-    }
+    fetchTransport();
   }, [id]);
 
-  // Delete transport function
   const handleDelete = async () => {
-    if (!transport || !transport.uuid) {
+    if (!transport || !transport.id) {
       console.error("Transport data is not loaded");
       return;
     }
@@ -62,16 +86,17 @@ const SingleTransportPage = ({ params }) => {
   
         if (response.ok) {
           alert("Item deleted successfully!");
-          setTransport(null);
+          window.location.href = `/pages/project/dashboard/${uuid}/dashboard/expenses/transport`;
         } else {
-          console.error("Failed to delete item", await response.text());
+          throw new Error("Failed to delete item");
         }
       } catch (error) {
         console.error("Error deleting item:", error);
+        alert("Failed to delete item. Please try again.");
       }
     }
   };
-  
+
   const handleUpdateClick = (transport) => {
     setSelectedTransport(transport);
     setShowPopup(true);
@@ -82,14 +107,41 @@ const SingleTransportPage = ({ params }) => {
     setSelectedTransport(null);
   };
 
+  // Updated date formatting function with proper null/undefined checking
+  const formatDate = (dateString) => {
+    if (!dateString || dateString === "null" || dateString === "undefined") {
+      return "N/A";
+    }
+    try {
+      const date = new Date(dateString);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return "N/A";
+      }
+      return date.toISOString().split("T")[0];
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return "N/A";
+    }
+  };
+
   const handleSavePopup = async () => {
     handleClosePopup();
     await fetchTransport();
   };
 
-  if (!transport) {
+  if (!transport && id) {
     return <div>Loading...</div>;
   }
+
+  if (!transport) {
+    return null;
+  }
+
+  // Helper function to safely access nested properties
+  const getDateValue = (dateField) => {
+    return transport[dateField] || "N/A";
+  };
 
   return (
     <div className={styles.container}>
@@ -98,6 +150,7 @@ const SingleTransportPage = ({ params }) => {
       </div>
       <div className={styles.formContainer}>
         <form className={styles.form}>
+          {/* First two rows remain unchanged */}
           <div className={styles.twoInputsRow}>
             <div>
               <label>Destination</label>
@@ -108,6 +161,12 @@ const SingleTransportPage = ({ params }) => {
               <input type="text" value={transport.travelPeriod} readOnly className={styles.editInputField} />
             </div>
           </div>
+          <div className={styles.twoInputsRow}>
+            <div>
+              <label>Description</label>
+              <input type="text" value={transport.description} readOnly className={styles.editInputField} />
+            </div>
+            </div>
 
           <div className={styles.twoInputsRow}>
             <div>
@@ -119,33 +178,14 @@ const SingleTransportPage = ({ params }) => {
               <input type="text" value={transport.allowance} readOnly className={styles.editInputField} />
             </div>
           </div>
-            <div className={styles.twoInputsRow}>
-            <div>
-              <label>Accounted</label>
-              <input
-                type="text"
-                value={transport.accounted || "N/A"}
-                readOnly
-                className={styles.editInputField}
-              />
-            </div>
-            <div>
-              <label>Amount Claimed</label>
-              <input
-                type="text"
-                value={transport.amountClaimed}
-                readOnly
-                className={styles.editInputField}
-              />
-            </div>
-          </div>
 
+          {/* Updated date fields with proper formatting */}
           <div className={styles.twoInputsRow}>
-            <div >
+            <div>
               <label>Approval Date</label>
               <input
                 type="text"
-                value={transport.approvalDate || "N/A"}
+                value={formatDate(getDateValue('approvalDate'))}
                 readOnly
                 className={styles.editInputField}
               />
@@ -153,28 +193,16 @@ const SingleTransportPage = ({ params }) => {
             <div className={styles.inputWithLink}>
               <label>Document</label>
               <div className={styles.inputContainer}>
-                <input
-                  type="text"
-                  value={transport.document || "N/A"}
-                  readOnly
-                  className={styles.editInputField}
-                />
-                {transport.document ? (
+                <input type="text" value={transport.document ? transport.document.split('/').pop() : "N/A"} readOnly className={styles.editInputField} />
+                {transport.document && (
                   <div className={styles.linksInsideInput}>
-                    <a
-                      href={`${config.baseURL}/${transport.document}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.fileLink}
-                    >
+                    <a href={`${config.baseURL}/${transport.document}`} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
                       View
                     </a>
                     <a href={`${config.baseURL}/download${transport.document}`} className={styles.fileLink}>
                       Download
                     </a>
                   </div>
-                ) : (
-                  <span className={styles.naText}>N/A</span>
                 )}
               </div>
             </div>
@@ -183,92 +211,62 @@ const SingleTransportPage = ({ params }) => {
           <div className={styles.twoInputsRow}>
             <div>
               <label>Approver</label>
-              <input
-                type="text"
-                value={transport.approver}
-                readOnly
-                className={styles.editInputField}
-              />
+              <input type="text" value={transport.approver || "N/A"} readOnly className={styles.editInputField} />
             </div>
             <div>
               <label>Claim Number</label>
-              <input
-                type="text"
-                value={transport.claimNumber}
-                readOnly
-                className={styles.editInputField}
-              />
+              <input type="text" value={transport.claimNumber || "N/A"} readOnly className={styles.editInputField} />
             </div>
           </div>
 
           <div className={styles.twoInputsRow}>
             <div>
               <label>Type</label>
-              <input
-                type="text"
-                value={transport.type}
-                readOnly
-                className={styles.editInputField}
-              />
+              <input type="text" value={transport.type || "N/A"} readOnly className={styles.editInputField} />
             </div>
             <div>
-              <label>Date Accounted</label>
-              <input
-                type="text"
-                value={transport.dateAccounted || "N/A"}
-                readOnly
-                className={styles.editInputField}
-              />
-            </div>
+                        <label htmlFor="dateOfRequest">Request Date</label>
+                        <input
+                            type="date"
+                            id="dateOfRequest"
+                            value={formatDate(getDateValue('dateOfRequest'))}
+                            readOnly
+                            className={styles.editInputField}
+                        
+                        />
+                    </div>
           </div>
 
           <div className={styles.twoInputsRow}>
-            <div>
-              <label>Date Taken to Approver</label>
-              <input
-                type="text"
-                value={transport.dateTakenToApprover || "N/A"}
-                readOnly
-                className={styles.editInputField}
-              />
-            </div>
-            <div>
-              <label>Date Taken to Finance</label>
-              <input
-                type="text"
-                value={transport.dateTakenToFinance}
-                readOnly
-                className={styles.editInputField}
-              />
-            </div>
-          </div>
-          <div className={styles.twoInputsRow}>
-            <div>
+          <div>
               <label>Payment Date</label>
               <input
                 type="text"
-                value={transport.paymentDate || "N/A"}
+                value={formatDate(getDateValue('paymentDate'))}
                 readOnly
                 className={styles.editInputField}
               />
             </div>
+
+                    <div>
+                        <label htmlFor="dateReceived">Received Date</label>
+                        <input
+                            type="date"
+                            id="dateReceived"
+                            value={formatDate(getDateValue('dateReceived'))}
+                            readOnly
+                            className={styles.editInputField}
+                          
+                        />
+                    </div>
+          </div>
+
+          <div className={styles.twoInputsRow}>
+            
             <div>
               <label>PvNo</label>
-              <input
-                type="text"
-                value={transport.PvNo}
-                readOnly
-                className={styles.editInputField}
-              />
+              <input type="text" value={transport.PvNo || "N/A"} readOnly className={styles.editInputField} />
             </div>
-          </div>
-          <div className={styles.twoInputsRow}>
-            <button type="button" className={`${styles.button} ${styles.view}`} onClick={() => handleUpdateClick(transport)}>
-              Update
-            </button>
-            <button className={`${styles.button} ${styles.delete}`} onClick={handleDelete}>
-              Delete
-            </button>
           </div>
         </form>
       </div>

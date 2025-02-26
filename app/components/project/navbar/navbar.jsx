@@ -17,20 +17,6 @@ const Navbar = ({ projectID,projectName, onSectionChange, activeSection }) => {
         </div>
         <div className={styles.navLinks}>
           
-        <Link href={`/pages/project/dashboard/${projectID}/dashboard/details`}>
-          <button
-            className="">
-            Details
-          </button>
-
-          </Link>
-      
-          {/* <button
-            className={activeSection === "assignees" ? styles.active : ""}
-            onClick={() => onSectionChange("assignees")}
-          >
-            Members
-          </button> */}
            <Link href={`/pages/project/dashboard/${projectID}/dashboard/phases`}>
           <button
             className="">
@@ -49,8 +35,15 @@ const Navbar = ({ projectID,projectName, onSectionChange, activeSection }) => {
             className="">
             Deliverables
           </button>
+          </Link>
+          <Link href={`/pages/project/dashboard/${projectID}/dashboard/assignees`}>
+          <button
+            className="">
+            Assignees
+          </button>
 
           </Link>
+      
           <Link href={`/pages/project/dashboard/${projectID}/dashboard/expenses`}>
           <button
             className="">

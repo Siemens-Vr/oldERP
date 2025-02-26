@@ -5,11 +5,16 @@ import styles from '@/app/styles/students/addStudent/addStudent.module.css';
 import { config } from "/config";
 import CohortModal from '@/app/components/cohort/AddCohort';
 import Spinner from '@/app/components/spinner/spinner'
+import { Label } from "recharts";
+import {useRouter} from "next/navigation";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const AddStudentPage = () => {
   const [showCohortModal, setShowCohortModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router= useRouter();
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [cohortLevelList, setCohortLevelList] = useState([]);
@@ -67,6 +72,7 @@ const AddStudentPage = () => {
         },
         body: JSON.stringify(dataToSend),
       });
+      const data = await response.json();
 
       if (response.ok) {
         // console.log("Student added successfully");
@@ -83,12 +89,22 @@ const AddStudentPage = () => {
           
         });
         setCohortLevelList([]);
+        if (router) {
+          router.push(`/pages/student/dashboard/students`);
       } else {
-        const errorData = await response.json();
-        setErrorMessage(errorData?.error?.errors?.[0]?.message || "An error occurred");
+          console.error("Router is not available");
+      }
+      } else {
+        if (data.error && Array.isArray(data.error)) {
+          data.error.forEach(err => toast.error(err)); // Display each error as a toast
+        } else {
+          toast.error("Failed to add Facilitator");
+        }
+        console.error("Failed to add Facilitator");
       }
     } catch (error) {
       setErrorMessage("An error occurred while adding the student.");
+      toast.error("An unexpected error occurred.");
     } finally {
       setLoading(false);
     }
@@ -104,6 +120,8 @@ const AddStudentPage = () => {
             {errorMessage}
           </div>
         )}
+         <div className={styles.divInput}>
+         <label htmlFor="firstName" className={styles.label}>First Name</label>
         <input
           type="text"
           placeholder="First Name"
@@ -112,6 +130,9 @@ const AddStudentPage = () => {
           onChange={handleChange}
           required
         />
+        </div>
+        <div className={styles.divInput}>
+        <label htmlFor="lastName" className={styles.label}>Last Name</label>
         <input
           type="text"
           placeholder="Last Name"
@@ -120,6 +141,9 @@ const AddStudentPage = () => {
           onChange={handleChange}
           required
         />
+        </div>
+        <div className={styles.divInput}>
+        <label htmlFor="email" className={styles.label}>Email</label>
         <input
           type="email"
           placeholder="Email"
@@ -128,6 +152,9 @@ const AddStudentPage = () => {
           onChange={handleChange}
           required
         />
+        </div>
+         <div className={styles.divInput}>
+         <label htmlFor="phone" className={styles.label}>Phone Number</label>
         <input
           type="text"
           placeholder="Phone"
@@ -135,6 +162,9 @@ const AddStudentPage = () => {
           value={formData.phone}
           onChange={handleChange}
         />
+        </div>
+        <div className={styles.divInput}>
+        <label htmlFor="regNo" className={styles.label}>Registration Number</label>
         <input
           type="text"
           placeholder="Registration Number"
@@ -142,7 +172,11 @@ const AddStudentPage = () => {
           value={formData.regNo}
           onChange={handleChange}
           required
-        />
+          />
+          </div>
+          <div className={styles.divInput}>
+         <label htmlFor="kcseNo" className={styles.label}>KCSE Number</label>
+  
         <input
           type="text"
           placeholder="KCSE Number"
@@ -151,6 +185,10 @@ const AddStudentPage = () => {
           onChange={handleChange}
           required
         />
+        </div>
+        <div className={styles.divInput}>
+        <label htmlFor="gender" className={styles.label}>Gender</label>
+
         <select
           name="gender"
           value={formData.gender}
@@ -160,8 +198,8 @@ const AddStudentPage = () => {
           <option value="">Select Gender</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
-          <option value="other">Other</option>
         </select>
+        </div>
 
 
         <button
@@ -217,7 +255,7 @@ const AddStudentPage = () => {
               'Submit'
             )}
         </button>
- 
+        <ToastContainer />
       </form>
       {showCohortModal && (
         <CohortModal

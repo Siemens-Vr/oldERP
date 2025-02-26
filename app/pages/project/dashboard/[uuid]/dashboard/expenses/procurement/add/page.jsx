@@ -2,11 +2,14 @@
 import { useState , usePara} from "react";
 import styles from '@/app/styles/supplier/addSupplier.module.css';
 import { config } from "/config";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProcurementAddPage = () => {
     const [isloading, setIsloading] = useState(false)
     const params = useParams()
+    const router =useRouter ();
     const {uuid} = params
     const [formData, setFormData] = useState({
         suppliers: "",
@@ -21,7 +24,7 @@ const ProcurementAddPage = () => {
         dateTakenToFinance: "",
         type: "",
         claimNumber: "",
-        pvNo: "",
+        PvNo: "",
         accounted: "",
         dateAccounted: "",
         procurement: null, 
@@ -84,7 +87,7 @@ const ProcurementAddPage = () => {
                     dateTakenToFinance: "",
                     type: "",
                     claimNumber: "",
-                    pvNo: "",
+                    PvNo: "",
                     accounted: "",
                     dateAccounted: "",
                     project: "",
@@ -93,11 +96,13 @@ const ProcurementAddPage = () => {
                 });
                 setIsloading(false)
             } else {
-                console.error("Failed to add Supplier", await response.text());
+                toast.error("Failed to add Supplier", await response.text());
             }
         } catch (error) {
-            console.error("Error:", error);
+            toast.error("Error:", error);
         }
+        router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/procurement`);
+
     };
     
 
@@ -120,12 +125,12 @@ const ProcurementAddPage = () => {
     
                 {(formData.type === "Claim" || formData.type === "Petty Cash" || formData.type === "Imprest") && (
                     <div className={styles.divInput}>
-                        <label htmlFor="pvNo" className={styles.label}>PV No</label>
+                        <label htmlFor="PvNo" className={styles.label}>PV No</label>
                         <input
                             type="text"
                             placeholder="PV No"
-                            name="pvNo"
-                            value={formData.pvNo}
+                            name="PvNo"
+                            value={formData.PvNo}
                             onChange={handleChange}
                          
                         />
@@ -168,6 +173,7 @@ const ProcurementAddPage = () => {
     return (
         <div className={styles.container}>
             {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
+            <ToastContainer position="top-center" autoClose={3000} />
             <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.divInput}>
                     <label htmlFor="itemName" className={styles.label}>Item Name</label>
@@ -177,8 +183,7 @@ const ProcurementAddPage = () => {
                         name="itemName"
                         value={formData.itemName}
                         onChange={handleChange}
-                        required
-                       
+                        required                      
                     />
                 </div>
                 <div className={styles.divInput}>
@@ -194,7 +199,7 @@ const ProcurementAddPage = () => {
                     />
                 </div>
                 <div className={styles.divInput}>
-                {/* <div className={`${styles.divInput} ${styles.fullWidth}`}> */}
+                <div className={`${styles.divInput} ${styles.fullWidth}`}>
                     <label htmlFor="itemDescription" className={styles.label}>Item Description</label>
                     <textarea
                         type="text"
@@ -207,6 +212,7 @@ const ProcurementAddPage = () => {
                     />
 
                 </div>
+                </div>
                 <div className={styles.divInput}>
                     <label htmlFor="amountClaimed" className={styles.label}>Amount Claimed</label>
                     <input
@@ -215,6 +221,7 @@ const ProcurementAddPage = () => {
                         name="amountClaimed"
                         value={formData.amountClaimed}
                         onChange={handleChange}
+                        required
                     
                     />
                 </div>
@@ -244,8 +251,6 @@ const ProcurementAddPage = () => {
                        
                     />
                 </div>
-                {/* <div className={styles.divInput}>
-                <div className={styles.divInputs}> */}
                 <div className={styles.divInput}>
                         <label htmlFor="document" className={styles.label}>Document </label>
                         <input
@@ -265,10 +270,6 @@ const ProcurementAddPage = () => {
                           
                         />
                     </div>
-                   
-                  
-                {/* </div>
-                </div> */}
            
                 <div className={styles.divInput}>
                 <label htmlFor="dateTakenToFinance" className={styles.label}>Date Taken To Finance</label>
@@ -280,17 +281,6 @@ const ProcurementAddPage = () => {
                      
                     />
                 </div>
-                {/* <div className={styles.divInput}>
-                    <div className={styles.divInputs}>
-                    <div className={styles.divInput}>
-                            <label htmlFor="payment" className={styles.label}>Payment </label>
-                            <input
-                                type="file"
-                                name="payment"
-                                onChange={handleChange}
-                            
-                            />
-                        </div> */}
                         <div className={styles.divInput}>
                             <label htmlFor="paymentDate" className={styles.label}>Payment Date</label>
                             <input
@@ -301,13 +291,6 @@ const ProcurementAddPage = () => {
                          
                             />
                         </div>
-                     
-
-                    {/* </div>
-                </div> */}
-
-                {/* <div className={styles.divInput}>
-                    <div className={styles.divInputs}> */}
                         <div className={styles.divInput}>
                             <label htmlFor="invoiceDate" className={styles.label}>Invoice Date</label>
                             <input
@@ -318,39 +301,6 @@ const ProcurementAddPage = () => {
                               
                             />
                         </div>
-                        {/* <div className={styles.divInput}>
-                            <label htmlFor="invoice" className={styles.label}>Invoice</label>
-                            <input
-                                type="file"
-                                name="invoice"
-                                onChange={handleChange}
-                             
-                            />
-                        </div>
-                    </div>
-                </div> */}
-            
-                {/* <div className={styles.divInput}>
-                    <label htmlFor="project" className={styles.label}>Project</label>
-                    <select
-                        name="project"
-                        value={formData.project}
-                        onChange={handleChange}
-                        required
-                        className={styles.select}
-                    >
-                        <option value="">Select project vote</option>
-                        <option value="SIFA">SIFA</option>
-                        <option value="Eureka">NRF-EUREKA</option>
-                        <option value ="NRF-PAMOJA">NRF-PAMOJA</option>
-                        <option value="CMU">CMU</option>
-                        <option value="Worldskills">Worldskills</option>
-                        <option value="ERASMUS">ERASMUS</option>
-                        <option value="SMSCP">SMSCP</option>
-
-
-                    </select>
-                </div> */}
                 <div className={styles.divInput}>
                     <label htmlFor="type" className={styles.label}>Type</label>
                     <select

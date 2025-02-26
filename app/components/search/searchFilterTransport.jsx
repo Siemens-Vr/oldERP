@@ -40,9 +40,9 @@ const Search = ({ placeholder }) => {
         className={styles.select}
       >
         <option value="all">Search Filter</option>
-        <option value="itemName">Item Name</option>
-        <option value="PvNo">PV No</option>
-        <option value="suppliers">Supplier</option>
+        <option value="destination">Destination</option>
+        <option value="travelPeriod">Travel Period</option>
+        <option value="travellers">Travellers</option>
         <option value="type">Type</option>
       
 

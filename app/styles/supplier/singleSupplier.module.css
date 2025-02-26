@@ -33,7 +33,6 @@
 .form button {
     width: 100%;
     padding: 20px;
-    background-color: teal;
     color: var(--text);
     border: none;
     border-radius: 5px;
@@ -61,6 +60,14 @@
     box-sizing: border-box; /* Include padding and borders in width */
     padding-right: 130px; /* Add space for links inside the input */
     position: relative;
+}
+.view{
+    background-color: teal;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
 }
 
 .deleteButton {
@@ -95,9 +102,10 @@
 
 .fileLink {
     color: teal; /* Customize link color */
-    text-decoration: underline; /* Underline links */
+    text-decoration: underline ; /* Underline links */
     font-size: 14px;
     cursor: pointer;
+    margin-top: 45px;
 }
 
 .fileLink:hover {

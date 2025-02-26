@@ -7,9 +7,11 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
         destination:'',
         travelPeriod:'',
         travelers:'',
+        description:'',
         dateOfRequest:null,
         dateReceived:null,
         approver:'',
+        transport:'',
         approvalDate:null,
         paymentDate:null,
         allowance:'',
@@ -18,6 +20,9 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
         claimNumber: '',
         accounted: '',
         dateAccounted: null,
+        beneficiary:'',
+        dateTakenToApprover: null,
+        dateTakenToFinance:null,
 
     });
 
@@ -26,31 +31,36 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
             setFormData({
                 destination: transport.destination || "",
                 travelPeriod: transport.travelPeriod || "",
+                description: transport.description || "",
                 travelers: transport.travelers || "",
-                dateOfRequest: transport.dateOfRequest 
-                ? new Date(transport.dateOfRequest).toISOString().slice(0, 10)
-                : '',
-                dateReceived: transport.dateReceived
-                ? new Date(transport.dateReceived).toISOString().slice(0, 10)
-                : '',
+                dateOfRequest: transport.dateOfRequest && !isNaN(Date.parse(transport.dateOfRequest)) 
+                    ? new Date(transport.dateOfRequest).toISOString().slice(0, 10) 
+                    : '',
+                dateReceived: transport.dateReceived && !isNaN(Date.parse(transport.dateReceived)) 
+                    ? new Date(transport.dateReceived).toISOString().slice(0, 10) 
+                    : '',
+                transport: transport.document || "",
                 approver: transport.approver || "",
-                approvalDate: transport.approvalDate 
-                ? new Date(transport.approvalDate).toISOString().slice(0, 10)
-                : '',
-                paymentDate: transport.paymentDate 
-                ? new Date(transport.paymentDate).toISOString().slice(0, 10)
-                : '',
+                approvalDate: transport.approvalDate && !isNaN(Date.parse(transport.approvalDate)) 
+                    ? new Date(transport.approvalDate).toISOString().slice(0, 10) 
+                    : '',
+                paymentDate: transport.paymentDate && !isNaN(Date.parse(transport.paymentDate)) 
+                    ? new Date(transport.paymentDate).toISOString().slice(0, 10) 
+                    : '',
                 allowance: transport.allowance || "",
                 type: transport.type || "",
                 PvNo: transport.PvNo || "",
                 claimNumber: transport.claimNumber || "",
                 accounted: transport.accounted || "",
-                dateAccounted: transport.dateAccounted 
-                ? new Date(transport.dateAccounted).toISOString().slice(0, 10)
-                : '',
+                dateAccounted: transport.dateAccounted && !isNaN(Date.parse(transport.dateAccounted)) 
+                    ? new Date(transport.dateAccounted).toISOString().slice(0, 10) 
+                    : '',
+                    beneficiary: transport.beneficiary || "",
             });
         }
     }, [transport]);
+    
+    
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -58,27 +68,54 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
 
     const handleSave = async () => {
         const formDataToSend = new FormData();
+    
+        // Helper function to validate dates
+        const validateDate = (date) => {
+            return date && !isNaN(Date.parse(date)) ? date : null;
+        };
+    
+        Object.keys(formData).forEach((key) => {
+            if (!['document'].includes(key)) {
+                if (["dateOfRequest", "dateReceived", "approvalDate", "paymentDate", "dateAccounted"].includes(key)) {
+                    const validDate = validateDate(formData[key]);
+                    if (validDate) {
+                        formDataToSend.append(key, validDate);
+                    }
+                } else {
+                    formDataToSend.append(key, formData[key]);
+                }
+            }
+        });
+    
+        // Append files if selected
+        if (formData.transport) formDataToSend.append('transport', formData.transport);
+    
         console.log('FormData to send:');
         for (let [key, value] of formDataToSend.entries()) {
             console.log(`${key}:`, value);
         }
+    
         try {
-            const response = await fetch(`${config.baseURL}/transports/${transport.id}/update`, {
-                method: "PATCH",
-                body: formDataToSend,
+            const url = `${config.baseURL}/transports/${transport.uuid}/update`;
+            console.log(url);
+            const response = await fetch(url, {
+                method: 'PATCH',
+                body: formDataToSend, // Send FormData
             });
-
+    
             if (response.ok) {
-                // const updatedTransport = await response.json();
-                onSave ();
-                handleClose();
+                alert('Transport updated successfully!');
+                onSave();
             } else {
-                console.error("Failed to update transport");
+                console.error('Failed to update transport', await response.text());
             }
         } catch (error) {
-            console.error("Error updating transport:", error);
+            console.error('Error:', error);
         }
     };
+  
+
+    
     const renderFields = () => {
         switch (formData.type) {
             case "Claim":
@@ -105,7 +142,7 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                                 value={formData.claimNumber}
                                 onChange={handleChange}
                                 placeholder="e.g. CL123456"
-                                required
+                              
                             />
                         </div>
                     </>
@@ -113,23 +150,23 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
             case "Petty Cash":
                 return (
                     <div className={styles.inputGroup}>
-                        <label htmlFor="PvNo">PV No</label>
-                        <input
-                            type="text"
-                            id="PvNo"
-                            name="PvNo"
-                            value={formData.PvNo}
-                            onChange={handleChange}
-                            placeholder="e.g. PV123456"
-                            required
-                        />
-                    </div>
+                   <label htmlFor="PvNo">PV No</label>
+                            <input
+                                type="text"
+                                id="PvNo"
+                                name="PvNo"
+                                value={formData.PvNo}
+                                onChange={handleChange}
+                                placeholder="e.g. PV123456"
+                                required
+                            />
+                </div>
                 );
             case "Imprest":
                 return (
                     <>
-                        <div className={styles.inputGroup}>
-                            <label htmlFor="PvNo">PV No</label>
+                    <div className={styles.inputGroup}>
+                    <label htmlFor="PvNo">PV No</label>
                             <input
                                 type="text"
                                 id="PvNo"
@@ -147,7 +184,7 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                                 name="accounted"
                                 value={formData.accounted}
                                 onChange={handleChange}
-                                required
+                                
                             >
                                 <option value="">Select</option>
                                 <option value="Yes">Yes</option>
@@ -162,7 +199,7 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                                 name="dateAccounted"
                                 value={formData.dateAccounted}
                                 onChange={handleChange}
-                                required
+                              
                             />
                         </div>
                     </>
@@ -196,22 +233,22 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                             type="text"
                             id="travelPeriod"
                             name="travelPeriod"
-                            value={formData.suppliers}
+                            value={formData.travelPeriod}
                             onChange={handleChange}
                             placeholder="e.g. 3 days."
-                            required
+                           
                         />
                     </div>
                     <div className={styles.inputGroup}>
-                        <label htmlFor="travelers">Travelers</label>
+                        <label htmlFor="description">Description</label>
                         <input
                             type="text"
-                            id="travelers"
-                            name="travelers"
-                            value={formData.travelers}
+                            id="description"
+                            name="description"
+                            value={formData.description}
                             onChange={handleChange}
                             placeholder="e.g. John Doe, Jane Doe"
-                            required
+                            
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -223,7 +260,7 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                             value={formData.allowance}
                             onChange={handleChange}
                             placeholder="e.g. 1500"
-                            required
+                        
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -235,9 +272,58 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                             value={formData.approver}
                             onChange={handleChange}
                             placeholder="e.g. John Doe"
-                            required
+                    
                         />
                     </div>
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="document">Document</label>
+                        <div className={styles.doc}>
+                            <div className={styles.docs}>
+                            <input
+                                type="text" 
+                                id="transport"
+                                name="transport"
+                                value={formData.transport instanceof File ? formData.transport.name : formData.transport ? formData.transport.split('/').pop() : "N/A"}
+                                readOnly
+                                placeholder="transport document"
+                               
+                            />
+
+                                {formData.transport && typeof formData.transport === "string" && (
+                                    <a
+                                        href={`${config.baseURL}/${formData.transport}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.fileLink}
+                                    >
+                                        Open File
+                                    </a>
+                                )}
+
+                            </div>
+
+                             <input
+                                type="file"
+                                id="transport"
+                                name="transport"
+                                onChange={(e) => setFormData({ ...formData, transport: e.target.files[0] })}
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="beneficiary">Travelers</label>
+                        <input
+                            type="text"
+                            id="beneficiary"
+                            name="beneficiary"
+                            value={formData.beneficiary}
+                            onChange={handleChange}
+                            placeholder="e.g. John Doe, Jane Doe"
+                          
+                        />
+                    </div>
+
+
                     <div className={styles.inputGroup}>
                         <label htmlFor="approvalDate">Approval Date</label>
                         <input
@@ -246,7 +332,7 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                             name="approvalDate"
                             value={formData.approvalDate}
                             onChange={handleChange}
-                            required
+                        
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -257,7 +343,7 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                             name="dateOfRequest"
                             value={formData.dateOfRequest}
                             onChange={handleChange}
-                            required
+                        
                         />
                     </div>
 
@@ -269,7 +355,7 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                             name="dateReceived"
                             value={formData.dateReceived}
                             onChange={handleChange}
-                            required
+                          
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -280,7 +366,29 @@ const UpdateTransportPopup = ({  onClose, transport, onSave  }) => {
                             name="paymentDate"
                             value={formData.paymentDate}
                             onChange={handleChange}
-                            required
+                            
+                        />
+                    </div>
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="dateTakenToApprover">Date Taken To Approver</label>
+                        <input
+                            type="datetime-local"
+                            id="dateTakenToApprover"
+                            name="dateTakenToApprover"
+                            value={formData.dateTakenToApprover}
+                            onChange={handleChange}
+                            
+                        />
+                    </div>
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="dateTakenToFinance">Date Taken To Finance</label>
+                        <input
+                            type="datetime-local"
+                            id="dateTakenToFinance"
+                            name="dateTakenToFinance"
+                            value={formData.dateTakenToFinance}
+                            onChange={handleChange}
+                           
                         />
                     </div>
                     <div className={styles.inputGroup}>
