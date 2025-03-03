@@ -82,7 +82,7 @@ const BorrowHistory = () => {
               <td>{borrow.quantity}</td>
               <td>
                 <span className={`${styles.badge} ${borrow.actualReturnDate ? styles.returned : styles.borrowed}`}>
-                  {borrow.actualReturnDate ? 'Returned' : 'Borrowed'}
+                  {borrow.actualReturnDate ? 'Not assigned' : 'Assigned'}
                 </span>
               </td>
             </tr>

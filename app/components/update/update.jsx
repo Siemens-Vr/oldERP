@@ -1,28 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import styles from '@/app/styles/update/update.module.css'
+import styles from '@/app/styles/update/update.module.css';
 
-
-const UpdatePopUp = ({ componentData, onClose, onUpdate }) => {
+const UpdatePopUp = ({ component, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
-    componentName: componentData?.componentName || '',
-    componentType: componentData?.componentType || '',
-    modelNumber: componentData?.modelNumber || '',
-    partNumber: componentData?.partNumber || '',
-    condition: componentData?.condition || false,
-    conditionDetails: componentData?.conditionDetails || '',
-    description: componentData?.description || '',
+    componentName: '',
+    componentType: '',
+    modelNumber: '',
+    partNumber: '',
+    condition: false,
+    conditionDetails: '',
+    description: '',
   });
 
+  // Update formData when component Data is available
+  useEffect(() => {
+    if (component) {
+      setFormData({
+        componentName: component.componentName || '',
+        componentType: component.componentType || '',
+        modelNumber: component.modelNumber || '',
+        partNumber: component.partNumber || '',
+        condition: component.condition ?? false,
+        conditionDetails: component.conditionDetails || '',
+        description: component.description || '',
+      });
+    }
+  }, [component]);
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onUpdate(formData);
   };
-
+  
   return (
     <div className={styles.popup}>
       <div className={styles.popupContent}>

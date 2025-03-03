@@ -52,7 +52,7 @@ const AddComponent = () => {
 
     setFormData({
       ...formData,
-      [name]: name === 'status' ? value === 'Borrowed'
+      [name]: name === 'status' ? value === 'Assigned'
         : name === 'condition' ? value === 'Not Okay' ? false : true
           : value,
     });
@@ -180,7 +180,7 @@ const AddComponent = () => {
             onChange={handleChange}>
           </textarea>
         </div>
-        <input type="hidden" name="status" value={formData.status ? 'Borrowed' : 'Not Borrowed'} />
+        <input type="hidden" name="status" value={formData.status ? 'Assigned' : 'Assigned'} />
         <input type="hidden" name="condition" value={formData.condition ? 'Okay' : 'Not Okay'} />
 
         {!formData.condition && (

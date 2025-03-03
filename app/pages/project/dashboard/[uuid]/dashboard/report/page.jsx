@@ -79,10 +79,11 @@ const Report = () => {
         }
     };
 
-    const handleDelete = async (fileId) => {
+    const handleDelete = async (file) => {
+        console.log(file.uuid)
         if (!window.confirm('Are you sure you want to delete this file?')) return;
         try {
-            const response = await fetch(`${config.baseURL}/reports/delete/${fileId}`, {
+            const response = await fetch(`${config.baseURL}/reports/project/${file.uuid}/delete`, {
                 method: 'DELETE',
             });
             if (response.ok) {

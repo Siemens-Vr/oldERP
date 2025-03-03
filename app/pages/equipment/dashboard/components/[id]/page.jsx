@@ -188,12 +188,12 @@ const SingleComponentPage = () => {
                   <td>{component.componentType}</td>
                   <td>
                     <span className={`${styles.badgePill} ${component.status ? styles.greenPill : styles.redPill}`}>
-                      {component.status ? 'Borrowed' : 'Not Borrowed'}
+                      {component.status ? 'Assigned' : ' Not Assigned'}
                     </span>
                   </td>
                   <td>
                     <span className={`${styles.badgePill} ${component.condition ? styles.greenPill : styles.redPill}`}>
-                      {component.condition ? 'Not Okay' : 'Okay'}
+                      {component.condition ? 'Okay' : 'Not Okay'}
                     </span>
                   </td>
                   <td className={styles.buttons}>

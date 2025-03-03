@@ -14,7 +14,7 @@
 .addButton,
 .downloadButton {
   padding: 10px 15px; /* Consistent padding */
-  color: var(--text);
+  /* color: var(--text); */
   border: none;
   border-radius: 5px; /* Uniform border radius for all buttons */
   cursor: pointer;
@@ -37,7 +37,7 @@
 .filterButton {
   margin-top: 28px;
   background-color: #007bff; /* Base color */
-  color: white;
+  /* color: white; */
   border-radius: 5px 5px 0 0; /* Rounded top corners */
   width: 150px; /* Fixed width */
   text-align: center; /* Left-aligned text */
@@ -75,7 +75,8 @@
   cursor: pointer;
   transition: background-color 0.3s ease; /* Transition for smooth hover effect */
   background-color: #007bff; /* Base color for filter options */
-  color: white;
+  /* color: white; */
+  color: black;
 }
 
 .filterOptions button:hover {
@@ -94,11 +95,13 @@
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  color: black;
   transition: border-color 0.3s; /* Transition for smooth border color change */
 }
 
 .filterInput input:focus {
   border-color: #007bff; /* Change border color on focus */
+  color: black;
 }
 
 .filterInput button {
@@ -336,7 +339,7 @@
 }
 .filterField input {
   background-color: white;
-  color: white;
+  color: black;
   padding: 5px;
   border: 1px solid #ccc;
   text-decoration: #000000;
@@ -372,6 +375,7 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  color: #000000;
 }
 
 .applyFilterButton {

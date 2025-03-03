@@ -8,10 +8,11 @@ import { config } from '/config';
 
 const EditComponent = () => {
   const params = useParams();
-  const id = params.id;
-
+  const { id } = params;
+  const [showSuccess, setShowSuccess] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [component, setComponent] = useState(null);
+  const [updateError, setUpdateError] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -29,30 +30,57 @@ const EditComponent = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [id]);
 
   const handleComponentUpdate = async (updatedData) => {
+    setUpdateError(null);
+  
+    const cleanValue = (value) => {
+      return value === "" || value === null ? "N/A" : value;
+    };
+    
+    const dataToUpdate = {
+      componentName: cleanValue(updatedData.componentName),
+      partNumber: cleanValue(updatedData.partNumber),
+      componentType: cleanValue(updatedData.componentType),
+      modelNumber: cleanValue(updatedData.modelNumber),
+      condition: updatedData.condition ?? false, // Boolean remains unchanged
+      conditionDetails: cleanValue(updatedData.conditionDetails),
+      description: cleanValue(updatedData.description),
+    };
+    
+    
+    console.log("Data being sent to API:", dataToUpdate);
+  
     try {
       const response = await fetch(`${config.baseURL}/components/${id}/update`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedData),
+        body: JSON.stringify(dataToUpdate),
       });
-
+  
       if (response.ok) {
-        await fetchData();  // Re-fetch data after update
-        setShowPopup(false);
-      } else {
-        const errorData = await response.json();
-        console.error('Failed to update component:', errorData);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+      }else{
+        const responseData = await response.json();
+        console.log("Error response:", responseData);
+        setUpdateError(responseData.error || "Update failed");
+        throw new Error(responseData.error || "Update failed");
       }
+  
+      await fetchData(); // Refresh data
+      setShowPopup(false);
     } catch (error) {
       console.error('Error updating component:', error);
     }
   };
-
+  
+  
+  
+  
   return (
     <div className={styles.container}>
       <div className={styles.historyButtons}>
@@ -65,6 +93,7 @@ const EditComponent = () => {
       </div>
 
       <div className={styles.componentInfo}>
+      {showSuccess && (<div className={styles.successMessage}>Component updated successfully!</div>)}
         {component ? (
           <>
             <p>Component Name:<span>{component.componentName}</span></p>
@@ -81,9 +110,11 @@ const EditComponent = () => {
         )}
       </div>
 
+      {updateError && <p className={styles.errorMessage}>{updateError}</p>}
+
       {showPopup && (
         <UpdatePopUp
-          componentData={component}
+          component={component}
           onClose={() => setShowPopup(false)}
           onUpdate={handleComponentUpdate}
         />

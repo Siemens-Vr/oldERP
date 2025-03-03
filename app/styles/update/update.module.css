@@ -54,13 +54,15 @@
   }
   
   .formGroup input,
-  .formGroup textarea, 
-  .formGroup select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  color: black; /* Make input text black */
+  background-color: white; 
   }
 
   
