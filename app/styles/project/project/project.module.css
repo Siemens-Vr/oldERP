@@ -1404,4 +1404,35 @@
     color: #c03535;
     transition: color 0.2s;
 }
+.successMessage {
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    animation: fadeIn 0.5s, fadeOut 0.5s 0.5s;
+    width: 100%;
+    max-width: 400px;
+  }
+/*   
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  } */
+  
+  .errorMessage {
+    background-color: #ffdddd;
+    border: 1px solid #f44336;
+    color: #f44336;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
 

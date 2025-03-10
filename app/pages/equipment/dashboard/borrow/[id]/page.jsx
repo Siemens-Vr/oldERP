@@ -55,7 +55,7 @@ const SinglePage = () => {
   const extractFormValues = (data) => {
     return {
       actualReturnDate: data.actualReturnDate || "",
-      status: data.component?.status ? "Borrowed" : "Not Borrowed",
+      status: data.component?.status ? "Assigned" : "Not Assigned",
       condition: data.component?.condition || "",
       conditionDetails: data.component?.conditionDetails || "",
     };
@@ -100,14 +100,15 @@ const SinglePage = () => {
       actualReturnDate: formValues.actualReturnDate,
       component: {
         ...borrowerData.component,
-        status: formValues.status === "Borrowed",
+        status: formValues.status === "Assigned",
         condition: formValues.condition,
         conditionDetails: formValues.conditionDetails,
       },
     };
+    console.log("components uuid:", uuid)
     console.log(payload)
     try {
-      const response = await fetch(`${config.baseURL}/borrows/${uuid}`, {
+      const response = await fetch(`${config.baseURL}/borrows/${uuid}/update`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

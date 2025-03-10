@@ -20,7 +20,6 @@ const adminMenuItems = [
     list: [
       { title: "Dashboard", path: "/pages/admin/dashboard", icon: <MdDashboard /> },
       { title: "Staff", path: "/pages/admin/dashboard/staff", icon: <MdPeople /> },
-      // { title: "Procurement", path: "/pages/admin/dashboard/suppliers", icon: <MdAnalytics /> },
       { title: "Student", path: "/pages/student/dashboard", icon: <MdAnalytics /> },
       { title: "Equipment", path: "/pages/equipment/dashboard", icon: <MdAnalytics /> },
       { title: "Projects", path: "/pages/project/dashboard", icon: <MdAnalytics /> },

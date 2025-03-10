@@ -14,7 +14,7 @@ const ProcurementPage = () => {
   const [procurement, setProcurement] = useState([]);
   const [count, setCount] = useState(0);
   const params = useParams();
-  const { uuid } = params;
+  const { uuid, phaseuuid, outputuuid } = params;
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -36,38 +36,7 @@ const ProcurementPage = () => {
     fetchProcurement();
   }, [q, page, filter]);
 
-  // const fetchProcurement = async () => {
-  //   setLoading(true); 
-  //   try {
-  //     let url = `${config.baseURL}/procurements/${uuid}?`;
-  //     const params = new URLSearchParams();
 
-  //     if (q) params.append("q", q);
-  //     if (page) params.append("page", page);
-  //     if (filter && filter !== "all") params.append("filter", filter);
-
-  //     url += params.toString();
-  //     console.log(url)
-
-  //     const response = await fetch(url);
-  //     const data = await response.json();
-
-  //     console.log(data)
-
-  //     if (response.ok) {
-  //       const { content, count } = data;
-  //       setProcurement(content || []);
-  //       setCount(count || 0);
-  //     } else {
-  //       console.error("Error fetching items:", await response.text());
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching items:", error);
-  //   }
-  //   finally {
-  //     setLoading(false);
-  // }
-  // };
 
   const fetchProcurement = async () => {
     setLoading(true); 
@@ -117,7 +86,7 @@ const ProcurementPage = () => {
   };
 
   const handleView = (procurementuuid) => {
-    // Add console.log to debug the procurementuuid
+ 
     console.log("View procurement UUID:", procurementuuid);
     
     if (!procurementuuid) {
@@ -125,8 +94,8 @@ const ProcurementPage = () => {
       return;
     }
 
-    // Use the router to navigate to the view page
-    router.push(`/pages/project/dashboard/${uuid}/dashboard/expenses/procurement/${procurementuuid}`);
+   
+    router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/procurement/${procurementuuid}`);
   };
 
   const handleDelete = async (procurementuuid) => {
@@ -182,7 +151,7 @@ const ProcurementPage = () => {
     <div className={styles.container}>
       <div className={styles.top}>
         <Search placeholder="Search for item..." />
-        <Link href={`/pages/project/dashboard/${uuid}/dashboard/expenses/procurement/add/`}>
+        <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/procurement/add/`}>
           <button className={styles.addButton}>Add</button>
         </Link>
       </div>

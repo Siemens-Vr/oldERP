@@ -7,7 +7,13 @@
   border-radius: 10px;
 }
 
-.container:hover,
-.active {
-  background-color: #2e374a;
+.container:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.activeLink {
+  background:  rgba(255, 255, 255, 0.1); 
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
 }

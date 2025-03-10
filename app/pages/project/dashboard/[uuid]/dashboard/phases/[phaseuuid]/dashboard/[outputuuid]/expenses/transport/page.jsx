@@ -14,7 +14,7 @@ const TransportPage = () => {
   const [transport, setTransport] = useState([]);
   const [count, setCount] = useState(0);
   const params= useParams()
-  const {uuid, id}= params
+  const {uuid, id, phaseuuid, outputuuid}= params
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const { replace } = useRouter();
@@ -91,7 +91,7 @@ const TransportPage = () => {
   };
 
   const handleView = (id) => {
-    window.location.href = `/pages/project/dashboard/${uuid}/dashboard/expenses/transport/${id}/`;
+    window.location.href = `/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport/${id}/`;
   };
   const handleDelete = async (id) => {
     if (!id) {
@@ -113,7 +113,7 @@ const TransportPage = () => {
         if (response.ok) {
           alert("Item deleted successfully!");
           // Immediate navigation without state updates
-          window.location.href = `/pages/project/dashboard/${uuid}/dashboard/expenses/transport`;
+          window.location.href = `/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`;
         } else {
           throw new Error("Failed to delete item");
         }
@@ -144,7 +144,7 @@ const TransportPage = () => {
       <div className={styles.top}>
         <Search placeholder="Search for travel..." />
 
-        <Link href={`/pages/project/dashboard/${uuid}/dashboard/expenses/transport/add/`}>
+        <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport/add/`}>
   <button className={styles.addButton}>Add</button>
 </Link>
       </div>

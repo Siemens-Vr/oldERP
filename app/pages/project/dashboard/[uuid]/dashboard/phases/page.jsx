@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import styles from "@/app/styles/project/project/project.module.css";
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import { FaEdit, FaPlus, FaTrash,FaEye } from "react-icons/fa";
 import { config } from "/config";
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 const Phases = () => {
     const [phases, setPhases] = useState([]);
@@ -14,19 +14,23 @@ const Phases = () => {
         status: "",
         deliverables: [],
     });
-    const [editPhaseData, setEditPhaseData] = useState(null); // State for editing phase
+    const [viewPhaseData, setViewPhaseData] = useState(null);
+    const [editPhaseData, setEditPhaseData] = useState(null);
+    const [editPhase, setEditPhase] = useState(null);  // State for editing phase
     const [showPhaseInput, setShowPhaseInput] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
     const [addPhaseError, setAddPhaseError] = useState("");
+    const router = useRouter();
     const params = useParams();
-    const { uuid } = params;
+    const { uuid, id } = params;
+    const [successMessage, setSuccessMessage] = useState([]);
 
     const fetchPhases = async () => {
         try {
             const response = await fetch(`${config.baseURL}/phases/${uuid}`);
             if (response.ok) {
                 const data = await response.json();
-                setPhases(data.phases || []);
+               setPhases(Array.isArray(data.phases) ? data.phases : []);
             } else {
                 console.error("Failed to fetch phases");
             }
@@ -99,11 +103,22 @@ const Phases = () => {
 
     const deletePhase = async (index) => {
         const phaseToDelete = phases[index];
+        if (!uuid || !phaseToDelete?.uuid) {
+            console.error("UUID is missing:", uuid, phaseToDelete?.uuid);
+            return; 
+        }
+    
+        console.log("Deleting phase with UUID:", uuid, phaseToDelete.uuid);
+    
         try {
             const response = await fetch(`${config.baseURL}/phases/${uuid}/${phaseToDelete.uuid}`, {
                 method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ phaseId: phaseToDelete.uuid }),
             });
-
+    
             if (response.ok) {
                 setPhases((prevPhases) => prevPhases.filter((_, i) => i !== index));
                 fetchPhases();
@@ -114,34 +129,89 @@ const Phases = () => {
             console.error("Error deleting phase:", error);
         }
     };
+    
 
-    const updatePhase = async () => {
-        if (editPhaseData) {
-            try {
-                const response = await fetch(`${config.baseURL}/phases/${uuid}/${editPhaseData.uuid}`, {
+    // const updatePhase = async () => {
+    //     if (editPhaseData) {
+    //         try {
+    //             const response = await fetch(`${config.baseURL}/phases/${uuid}/${editPhaseData.uuid}/update`, {
+    //                 method: "PUT",
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                 },
+    //                 body: JSON.stringify(editPhaseData),
+    //             });
+
+    //             if (response.ok) {
+    //                 fetchPhases();
+    //                 setEditPhaseData(null); // Close the edit modal
+    //             } else {
+    //                 console.error("Failed to update phase");
+    //             }
+    //         } catch (error) {
+    //             console.error("Error updating phase:", error);
+    //         }
+    //     }
+    // };
+
+    const updatePhase= async () => {
+        if (!editPhaseData.name.trim() ) {
+            alert("Please provide all required details including name and status!");
+            return;
+        }
+
+        try {
+            const payload = {
+                phases: [
+                    {
+                        phaseId: editPhaseData.uuid, 
+                        name: editPhaseData.name, 
+                        status: editPhaseData.status, 
+                        startDate: editPhaseData.startDate, 
+                        endDate: editPhaseData.endDate, // ✅ Renamed to match backend expectation
+                        deliverables: editPhaseData.deliverables || [] // Ensure deliverables exist
+                    }
+                ]
+            };
+            
+            
+            console.log("Payload:", JSON.stringify(payload, null, 2));
+
+            console.log("Updating phase with:", uuid, editPhaseData.uuid);
+
+            const response = await fetch(
+                `${config.baseURL}/phases/${uuid}/${editPhaseData.uuid}`,
+                {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(editPhaseData),
-                });
-
-                if (response.ok) {
-                    fetchPhases();
-                    setEditPhaseData(null); // Close the edit modal
-                } else {
-                    console.error("Failed to update phase");
+                    body: JSON.stringify(payload),
                 }
-            } catch (error) {
-                console.error("Error updating phase:", error);
+            );
+
+            if (response.ok) {
+                fetchPhases();
+                console.log("phase updated successfully");
+                setSuccessMessage("Phase updated successfully");
+                setTimeout(() => setSuccessMessage(""), 3000);
+                setEditPhase(null);
+                setEditPhaseData(null); 
+
+            } else {
+                const responseText = await response.text();
+                console.error("Failed to update phase:", responseText);
             }
+        } catch (error) {
+            console.error("Error updating phase:", error);
         }
     };
-
     return (
+        // <div className= {styles.container}></div>
         <div className={styles.phases}>
             <div className = {styles.top}>
                 <h2>Phases</h2>
+                {/* {successMessage && <p className={styles.successMessage}>{successMessage}</p>} */}
                 <button
                     onClick={() => setShowPhaseInput(true)}
                     className={styles.addButton}
@@ -156,6 +226,10 @@ const Phases = () => {
                         <div className={styles.top}>
                             <h3>{phase.name}</h3>
                             <div className={styles.cardActions}>
+                            <FaEye
+                                    className={styles.viewIcon}
+                                    onClick={() => router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${phase.uuid}/dashboard`)}
+                                />
                                 <FaEdit
                                     className={styles.editIcon}
                                     onClick={() => setEditPhaseData(phase)}

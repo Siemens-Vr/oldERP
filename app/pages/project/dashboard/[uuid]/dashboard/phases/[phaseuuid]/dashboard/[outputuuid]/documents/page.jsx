@@ -580,33 +580,27 @@ const Documents = () => {
         }
     };
 
-    // const handleView = async (file) => {
-    //     try {
-    //         const viewUrl = `${config.baseURL}/documents/${file.id}`;
-    //         const newTab = window.open('', '_blank');
+    const handleView = async (file) => {
+        try {
+            // Ensure the project UUID is correctly defined
+            const viewUrl = `${config.baseURL}/documents/${uuid}/${file.uuid}`;
     
-    //         if (!newTab) {
-    //             alert('Pop-up blocked! Please allow pop-ups for this site.');
-    //             return;
-    //         }
+            // Open a new tab
+            const newTab = window.open('', '_blank');
     
-    //         setViewUrl(viewUrl);
-    //         setShowView(true);
+            if (!newTab) {
+                alert('Pop-up blocked! Please allow pop-ups for this site.');
+                return;
+            }
     
-    //         // Open the file URL in the new tab
-    //         newTab.location.href = viewUrl;
-    //     } catch (error) {
-    //         console.error('Error viewing file:', error);
-    //         alert('Failed to view file');
-    //     }
-    // };
-    const handleView = (file) => {
-            window.open(`${config.baseURL}/documents/view/${file.uuid}`, '_blank');
-        };
+            // Open the file URL in the new tab
+            newTab.location.href = viewUrl;
     
-        // const handleDownload = (file) => {
-        //     window.open(`${config.baseURL}/reports/download/${file.id}`, '_blank');
-        // };
+        } catch (error) {
+            console.error('Error viewing file:', error);
+            alert('Failed to view file');
+        }
+    };
     
       // New function to handle file download
       const handleDownload = async (file) => {
@@ -632,7 +626,6 @@ const Documents = () => {
     //handle file delete
     const handleDeleteFile = async (fileId) => {
         if (!confirm('Are you sure you want to delete this file?')) return;
-        // console.log('clicked')
 
         try {
             const response = await fetch(`${config.baseURL}/documents/delete/${fileId}`, {
@@ -694,7 +687,7 @@ const Documents = () => {
 
     // Open Folder
     const handleOpenFolder = (folder, parentFolder = null) => {
-        // If the parent folder is provided, pass it as an option
+      
         const options = parentFolder 
             ? { parentFolderId: parentFolder.uuid } 
             : {};

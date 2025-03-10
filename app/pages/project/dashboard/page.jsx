@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import ProjectCard from '@/app/components/project/projectCard';
-import AddProjectModal from '@/app/components/project/add/AddProjectModal';
 import styles from '@/app/styles/dashboards/project/dashboard.module.css';
+import style from "@/app/styles/project/project/project.module.css";
 import Spinner from "@/app/components/spinner/spinner";
 import { config } from "/config";
 
@@ -14,8 +14,7 @@ const Dashboard = () => {
     const router = useRouter();
     const [editModalOpen, setEditModalOpen] = useState(false); // Edit modal visibility
     const [editProjectData, setEditProjectData] = useState(null); // Project being edited
-
-
+    const [isAdding, setIsAdding] = useState(false);
     const [searchTerm, setSearchTerm] = useState(searchParams.get('query') || '');
     const [filter, setFilter] = useState('All Projects');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,6 +23,16 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null); // To store the selected project for actions
     const [isSaving, setIsSaving] = useState(false); // To handle the saving state
+    const [newProject, setNewProject] = useState({
+        name: "",
+        startDate: "",
+        endDate: "",
+        status: "",
+        description: "",
+    });
+    const [showProjectInput, setShowProjectInput] =useState([]) ; 
+    const [addProjectError, setAddProjectError] = useState([]);
+    const [successMessage, setSuccessMessage] = useState([]);
 
     // Fetch projects from backend
     const fetchProjects = async () => {
@@ -107,8 +116,10 @@ const Dashboard = () => {
     };
 
 
-    const addProject = async (newProject) => {
+    const addProject = async (e) => {
+        e.preventDefault()
         // Call the API to add the new project
+        try{
         const response = await fetch(`${config.baseURL}/projects`, {
             method: 'POST',
             headers: {
@@ -116,14 +127,35 @@ const Dashboard = () => {
             },
             body: JSON.stringify(newProject),
         });
+        console.log("New project data:", newProject);
 
         if (response.ok) {
-            // Optionally you can call fetchProjects here too
-        } else {
-            console.error('Failed to add the project');
+            fetchProjects();
+            setShowProjectInput(false);
+            setSuccessMessage("Project added successfully");
+            setTimeout(() => setSuccessMessage(""), 3000);
+            setNewProject({
+                name: "",
+                startDate: "",
+                endDate: "",
+                status: "",
+                description:"",
+                
+            });
+        }  else {
+            const errorText = await response.text();
+            console.error("Failed to add project:", errorText);
+            setAddProjectError("Failed to add project.");
+            setErrorMessage("Failed to add project");
         }
-        closeModal(); // Call closeModal to close and refresh
-    };
+    }catch (error) {
+        console.error("Error in addProject function:", error);
+        setAddProjectError("Error occurred while adding project.");
+    }
+    // } finally {
+    //     setIsAdding(false);
+    // }
+};
 
     const handleMenuClick = (project) => {
         setSelectedProject(project); // Set the selected project for actions
@@ -203,6 +235,7 @@ const Dashboard = () => {
             <div className={styles.mainContent}>
                 <header className={styles.header}>
                     <h1>Project Management Dashboard</h1>
+                    {/* {successMessage && <p className={style.successMessage}>{successMessage}</p>} */}
                     <div className={styles.controls}>
                         <input
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -221,7 +254,7 @@ const Dashboard = () => {
                             <option value="Active">Active</option>
                             <option value="Completed">Completed</option>
                         </select>
-                        <button className={styles.addProjectBtn} onClick={openModal}>
+                        <button className={styles.addProjectBtn}  onClick={() => setShowProjectInput(true)}>
                             + Add Project
                         </button>
                     </div>
@@ -341,15 +374,85 @@ const Dashboard = () => {
                     </div>
                 </div>
             )}
-
-
-
-
-            <AddProjectModal
-                isModalOpen={isModalOpen}
-                closeModal={closeModal}
-                addProject={addProject}
-            />
+   {/* Add Project Modal */}
+   {showProjectInput && (
+                <div className={style.modalOverlay}>
+                    <div className={style.modalContent}>
+                        <h3>Add Project</h3>
+                        <div className={style.divInput}>
+                            <label htmlFor="Name">Name</label>
+                            <input
+                                type="text"
+                                value={newProject.name}
+                                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+                                placeholder="Project Name"
+                                required
+                                className={style.inputField}
+                            />
+                        </div>
+                        <div className={style.divInput}>
+                            <label htmlFor="Start Date">Start Date</label>
+                            <input
+                                type="date"
+                                value={newProject.startDate}
+                                onChange={(e) =>
+                                    setNewProject({ ...newProject, startDate: e.target.value })
+                                }
+                                required
+                                className={style.inputField}
+                            />
+                        </div>
+                        <div className={style.divInput}>
+                            <label htmlFor="End Date">End Date</label>
+                            <input
+                                type="date"
+                                value={newProject.endDate}
+                                onChange={(e) =>
+                                    setNewProject({ ...newProject, endDate: e.target.value })
+                                }
+                                required
+                                className={style.inputField}
+                            />
+                        </div>
+                        <div className={style.divInput}>
+                        <label htmlFor="Status">Status</label>
+                        <select
+                            value={newProject.status}
+                            onChange={(e) =>
+                                setNewProject({ ...newProject, status: e.target.value })
+                            }
+                            className={style.inputField}
+                        >
+                            <option value="">Select Status</option>
+                            <option value="todo">To Do</option>
+                            <option value="progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        </div>
+                        <div className={style.divInput}>
+                            <label htmlFor="description">Description</label>
+                            <input
+                                type="text"
+                                value={newProject.description}
+                                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                                className={style.inputField}
+                                required
+                            />
+                        </div>
+                        <div className={style.modalActions}>
+                        <button onClick={addProject} disabled={isAdding} className={style.addButton}>
+                                {isAdding ? "Adding..." : "Add"}
+                            </button>
+                            <button
+                                onClick={() => setShowProjectInput(false)}
+                                className={style.closeButton}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
