@@ -23,7 +23,7 @@ const Phases = () => {
     const router = useRouter();
     const params = useParams();
     const { uuid, id } = params;
-    const [successMessage, setSuccessMessage] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
     const fetchPhases = async () => {
         try {

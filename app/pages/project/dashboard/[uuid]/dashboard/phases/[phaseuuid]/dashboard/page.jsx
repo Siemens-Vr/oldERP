@@ -21,7 +21,7 @@ const OutputsList = () => {
     const [selectedOutput, setSelectedOutput] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
-    const [Phases, setPhases] = useState([]);
+    
 
     // Fetch outputs function
     const fetchOutputs = async () => {

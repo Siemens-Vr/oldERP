@@ -32,7 +32,8 @@ const Dashboard = () => {
     });
     const [showProjectInput, setShowProjectInput] =useState(false) ; 
     const [addProjectError, setAddProjectError] = useState([]);
-    const [successMessage, setSuccessMessage] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     // Fetch projects from backend
     const fetchProjects = async () => {
@@ -144,6 +145,9 @@ const Dashboard = () => {
             });
         }  else {
             const errorText = await response.text();
+            setErrorMessage("Failed to add project");
+            setTimeout(() => setErrorMessage(""), 3000);
+            setShowProjectInput(false);
             console.error("Failed to add project:", errorText);
             setAddProjectError("Failed to add project.");
             setErrorMessage("Failed to add project");
@@ -235,7 +239,8 @@ const Dashboard = () => {
             <div className={styles.mainContent}>
                 <header className={styles.header}>
                     <h1>Project Management Dashboard</h1>
-                     {successMessage && <p className={style.successMessage}>{successMessage}</p>} 
+                     {successMessage && <p className={style.successMessage}>{successMessage}</p>}
+                    {errorMessage && <p className={style.errorMessage}>{errorMessage}</p>} 
                     <div className={styles.controls}>
                         <input
                             onChange={(e) => setSearchTerm(e.target.value)}
