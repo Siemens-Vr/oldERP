@@ -23,7 +23,7 @@ const Phases = () => {
     const router = useRouter();
     const params = useParams();
     const { uuid, id } = params;
-    const [successMessage, setSuccessMessage] = useState([]);
+    const [successMessage, setSuccessMessage] = useState(false);
 
     const fetchPhases = async () => {
         try {
@@ -78,6 +78,8 @@ const Phases = () => {
                 if (response.ok) {
                     fetchPhases();
                     setShowPhaseInput(false);
+                    setSuccessMessage("Phase added successfully");
+                    setTimeout(() => setSuccessMessage(""), 3000);
                     setNewPhase({
                         name: "",
                         startDate: "",
@@ -211,7 +213,7 @@ const Phases = () => {
         <div className={styles.phases}>
             <div className = {styles.top}>
                 <h2>Phases</h2>
-                {/* {successMessage && <p className={styles.successMessage}>{successMessage}</p>} */}
+             {successMessage && <p className={styles.successMessage}>{successMessage}</p>} 
                 <button
                     onClick={() => setShowPhaseInput(true)}
                     className={styles.addButton}

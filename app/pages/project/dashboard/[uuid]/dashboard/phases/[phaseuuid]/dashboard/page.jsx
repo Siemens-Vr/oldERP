@@ -20,6 +20,8 @@ const OutputsList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedOutput, setSelectedOutput] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [Phases, setPhases] = useState([]);
 
     // Fetch outputs function
     const fetchOutputs = async () => {
@@ -58,8 +60,12 @@ const OutputsList = () => {
                 body: JSON.stringify(newOutput),
             });
 
-            if (!response.ok) {
-                console.error('Failed to add output');
+            if (response.ok) {
+              setSuccessMessage("Phase added successfully");
+                    setTimeout(() => setSuccessMessage(""), 3000);
+            }
+            else{
+              console.error('Failed to add output');
             }
         } catch (error) {
             console.error('Error adding output:', error);
@@ -126,6 +132,7 @@ const OutputsList = () => {
 
     return (
         <div className={styles.container}>
+          {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
             <div className={styles.top}>
                 <Search placeholder="Search for an output..." />
                 <button className={styles.addButton} onClick={openModal}>Add</button>

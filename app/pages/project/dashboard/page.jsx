@@ -30,9 +30,9 @@ const Dashboard = () => {
         status: "",
         description: "",
     });
-    const [showProjectInput, setShowProjectInput] =useState([]) ; 
+    const [showProjectInput, setShowProjectInput] =useState(false) ; 
     const [addProjectError, setAddProjectError] = useState([]);
-    const [successMessage, setSuccessMessage] = useState([]);
+    const [successMessage, setSuccessMessage] = useState(false);
 
     // Fetch projects from backend
     const fetchProjects = async () => {
@@ -235,7 +235,7 @@ const Dashboard = () => {
             <div className={styles.mainContent}>
                 <header className={styles.header}>
                     <h1>Project Management Dashboard</h1>
-                    {/* {successMessage && <p className={style.successMessage}>{successMessage}</p>} */}
+                     {successMessage && <p className={style.successMessage}>{successMessage}</p>} 
                     <div className={styles.controls}>
                         <input
                             onChange={(e) => setSearchTerm(e.target.value)}
