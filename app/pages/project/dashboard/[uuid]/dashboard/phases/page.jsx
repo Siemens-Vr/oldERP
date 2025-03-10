@@ -4,6 +4,7 @@ import styles from "@/app/styles/project/project/project.module.css";
 import { FaEdit, FaPlus, FaTrash,FaEye } from "react-icons/fa";
 import { config } from "/config";
 import { useParams, useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 const Phases = () => {
     const [phases, setPhases] = useState([]);
@@ -24,6 +25,7 @@ const Phases = () => {
     const params = useParams();
     const { uuid, id } = params;
     const [successMessage, setSuccessMessage] = useState("");
+    const [deleting, setDeleting] = useState(null);
 
     const fetchPhases = async () => {
         try {
@@ -42,6 +44,15 @@ const Phases = () => {
     useEffect(() => {
         fetchPhases();
     }, []);
+
+      const showErrorAlert = (message) => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: message,
+          confirmButtonColor: '#3085d6',
+        });
+      };
 
     const addPhase = async () => {
         console.log("UUID in addPhase:", uuid);
@@ -103,12 +114,25 @@ const Phases = () => {
         }
     };
 
-    const deletePhase = async (index) => {
+    const deletePhase = async (index, name) => {
         const phaseToDelete = phases[index];
         if (!uuid || !phaseToDelete?.uuid) {
             console.error("UUID is missing:", uuid, phaseToDelete?.uuid);
             return; 
         }
+        const result = await Swal.fire({
+              title: 'Are you sure?',
+              text: `You are about to delete ${name} `,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#3085d6',
+              confirmButtonText: 'Yes, delete',
+              cancelButtonText: 'Cancel'
+            });
+            
+            if (result.isConfirmed) {
+              setDeleting(uuid);
     
         console.log("Deleting phase with UUID:", uuid, phaseToDelete.uuid);
     
@@ -124,12 +148,24 @@ const Phases = () => {
             if (response.ok) {
                 setPhases((prevPhases) => prevPhases.filter((_, i) => i !== index));
                 fetchPhases();
+                 Swal.fire({
+                            title: 'Deleted!',
+                            text: `${name} has been successfully deleted.`,
+                            icon: 'success',
+                            confirmButtonColor: '#3085d6',
+                          });
             } else {
                 console.error("Failed to delete phase");
+                showErrorAlert(errorData.error || 'Failed to delete phase.');
             }
         } catch (error) {
             console.error("Error deleting phase:", error);
+            showErrorAlert('An error occurred while trying to delete the phase.');
         }
+        finally {
+            setDeleting(null);
+        }   
+    }
     };
     
 
@@ -238,7 +274,7 @@ const Phases = () => {
                                 />
                                 <FaTrash
                                     className={styles.deleteIcon}
-                                    onClick={() => deletePhase(index)}
+                                    onClick={() => deletePhase(index, phase.name)}
                                 />
                             </div>
                         </div>

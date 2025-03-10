@@ -9,6 +9,7 @@ import Link from "next/link";
 import { config } from "/config";
 import ActionButton from "@/app/components/actionButton/actionButton";
 import UpdateSupplierPopup from '@/app/components/suppliers/update';
+import Swal from 'sweetalert2';
 
 const ProcurementPage = () => {
   const [procurement, setProcurement] = useState([]);
@@ -23,6 +24,7 @@ const ProcurementPage = () => {
   const filter = searchParams.get("filter") || "all";
   const [selectedProcurement, setSelectedProcurement] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!searchParams.has("page")) {
@@ -98,14 +100,26 @@ const ProcurementPage = () => {
     router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/procurement/${procurementuuid}`);
   };
 
-  const handleDelete = async (procurementuuid) => {
+  const handleDelete = async (procurementuuid, name) => {
     if (!procurementuuid) {
       console.error("Procurement UUID is missing");
       return;
     }
   
-    const confirmDelete = window.confirm("Are you sure you want to delete this item?");
-  
+   const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete ${name} `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel'
+              });
+              
+              if (result.isConfirmed) {
+                setDeleting(uuid);
+      
     if (confirmDelete) {
       try {
         const response = await fetch(`${config.baseURL}/procurements/project/${procurementuuid}/delete`, {
@@ -116,8 +130,13 @@ const ProcurementPage = () => {
         });
   
         if (response.ok) {
-          alert("Item deleted successfully!");
           await fetchProcurement();
+           Swal.fire({
+              title: 'Deleted!',
+              text: `${name} has been successfully deleted.`,
+              icon: 'success',
+              confirmButtonColor: '#3085d6',
+            });
         } else {
           throw new Error("Failed to delete item");
         }
@@ -127,6 +146,7 @@ const ProcurementPage = () => {
       }
     }
   };
+};
 
   const handleUpdateClick = (procurement) => {
     setSelectedProcurement(procurement);
@@ -184,7 +204,7 @@ const ProcurementPage = () => {
                   <ActionButton
                     onEdit={() => handleUpdateClick(procurement)}
                     onDownload={() => handleDownloadAll(procurement)}
-                    onDelete={() => handleDelete(procurement.uuid)}
+                    onDelete={() => handleDelete(procurement.uuid, procurement.itemName)}
                     onView={() => handleView(procurement.uuid)}   
                   />
                 </td>

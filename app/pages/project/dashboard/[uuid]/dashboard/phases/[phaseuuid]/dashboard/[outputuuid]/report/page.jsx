@@ -16,6 +16,7 @@ import {
     FaEllipsisV
 } from "react-icons/fa";
 import { useParams } from "next/navigation";
+import Swal from "sweetalert2";
 
 const Report = () => {
     const [report, setReport] = useState([]);
@@ -29,6 +30,7 @@ const Report = () => {
     const menuRefs = useRef({}); 
     const params = useParams();
     const { uuid } = params;
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         fetchFiles();
@@ -106,8 +108,22 @@ const Report = () => {
         }
     };
 
-    const handleDelete = async (file) => {
-        if (!window.confirm("Are you sure you want to delete this file?")) return;
+    const handleDelete = async (file, name) => {
+         const result = await Swal.fire({
+                            title: 'Are you sure?',
+                            text: `You are about to delete ${name} `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, delete',
+                            cancelButtonText: 'Cancel'
+                          });
+                          
+                          if (result.isConfirmed) {
+                            setDeleting(uuid);
+          
+            if (confirmDelete) {
 
         try {
             const response = await fetch(
@@ -120,6 +136,12 @@ const Report = () => {
             if (response.ok) {
                 setFileList((prev) => prev.filter((f) => f.id !== file.id)); 
                 setSuccessMessage("Report deleted successfully!");
+                 Swal.fire({
+                    title: 'Deleted!',
+                    text: `${name} has been successfully deleted.`,
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    });
             } else {
                 setErrorMessage("Error deleting report")
                 console.error("Error deleting file:", await response.text());
@@ -127,6 +149,8 @@ const Report = () => {
         } catch (error) {
             console.error("Error deleting file:", error);
         }
+    };
+};
     };
 
     const handleView = (file) => {
@@ -218,7 +242,7 @@ const Report = () => {
             {menuOpen[file.id] && (
                 <div className={styles.menuDropdown} onClick={(e) => e.stopPropagation()}>
                     <button onClick={(e) => { e.stopPropagation(); handleDownload(file); }}>Download</button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(file); }}>Delete</button>
+                    <button onClick={(e) => { e.stopPropagation(); handleDelete(file, file.name); }}>Delete</button>
                 </div>
             )}
         </div>

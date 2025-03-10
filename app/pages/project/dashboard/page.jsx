@@ -7,6 +7,7 @@ import styles from '@/app/styles/dashboards/project/dashboard.module.css';
 import style from "@/app/styles/project/project/project.module.css";
 import Spinner from "@/app/components/spinner/spinner";
 import { config } from "/config";
+import Swal from 'sweetalert2';
 
 const Dashboard = () => {
     const searchParams = useSearchParams();
@@ -34,6 +35,7 @@ const Dashboard = () => {
     const [addProjectError, setAddProjectError] = useState([]);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [deleting, setDeleting] = useState(null); 
 
     // Fetch projects from backend
     const fetchProjects = async () => {
@@ -97,16 +99,36 @@ const Dashboard = () => {
     };
 
 
-    const handleDelete = async (uuid) => {
+    const handleDelete = async (uuid, name) => {
         // Call the delete API endpoint
+const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete ${name}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete',
+      cancelButtonText: 'Cancel'
+    });
+    
+    if (result.isConfirmed) {
+      setDeleting(uuid);
         const response = await fetch(`${config.baseURL}/projects/delete/${uuid}`);
         if (response.ok) {
             setProjects((prevProjects) => prevProjects.filter((project) => project.uuid !== uuid));
+              Swal.fire({
+                        title: 'Deleted!',
+                        text: `${name} has been successfully deleted.`,
+                        icon: 'success',
+                        confirmButtonColor: '#3085d6',
+                      });
         } else {
             console.error('Failed to delete the project');
         }
         setSelectedProject(null); // Reset selected project
     };
+};
 
     const openModal = () => setIsModalOpen(true);
 
@@ -292,7 +314,7 @@ const Dashboard = () => {
                                                 <div className={styles.menuOptions}>
                                                     <button onClick={() => handleCardClick(project)}>View</button>
                                                     <button onClick={() => handleEdit(project)}>Edit</button>
-                                                    <button onClick={() => handleDelete(project.uuid)}>Delete</button>
+                                                    <button onClick={() => handleDelete(project.uuid, project.name)}>Delete</button>
                                                 </div>
                                             )}
                                         </div>

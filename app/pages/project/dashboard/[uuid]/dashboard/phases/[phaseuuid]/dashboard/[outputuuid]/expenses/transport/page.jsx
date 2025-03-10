@@ -9,6 +9,7 @@ import Link from "next/link";
 import { config } from "/config";
 import ActionButton from "@/app/components/actionButton/actionButton";
 import UpdateTransportPopup from  '@/app/components/transport/update';
+import Swal from "sweetalert2";
 
 const TransportPage = () => {
   const [transport, setTransport] = useState([]);
@@ -23,6 +24,7 @@ const TransportPage = () => {
   const filter = searchParams.get("filter") || "all";
   const [selectedTransport, setSelectedTransport] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [deleting, setDeleting] = useState(false);
  
 
   useEffect(() => {
@@ -93,13 +95,25 @@ const TransportPage = () => {
   const handleView = (id) => {
     window.location.href = `/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport/${id}/`;
   };
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, name) => {
     if (!id) {
       console.error("Transport data is not loaded");
       return;
     }
   
-    const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+    const result = await Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to delete ${name} `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete',
+                    cancelButtonText: 'Cancel'
+                  });
+                  
+                  if (result.isConfirmed) {
+                    setDeleting(uuid);
   
     if (confirmDelete) {
       try {
@@ -111,9 +125,14 @@ const TransportPage = () => {
         });
   
         if (response.ok) {
-          alert("Item deleted successfully!");
-          // Immediate navigation without state updates
-          window.location.href = `/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`;
+          Swal.fire({
+            title: 'Deleted!',
+            text: `${name} has been successfully deleted.`,
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+          });
+// Immediate navigation without state updates
+          // window.location.href = `/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`;
         } else {
           throw new Error("Failed to delete item");
         }
@@ -123,6 +142,7 @@ const TransportPage = () => {
       }
     }
   };
+};
 
   const handleUpdateClick = (transport) => {
     setSelectedTransport(transport);
@@ -179,7 +199,7 @@ const TransportPage = () => {
                   <ActionButton
                     onEdit={() => handleUpdateClick(transport)}
                     onDownload={() => handleDownloadAll(transport)}
-                    onDelete={() => handleDelete (transport.id)}
+                    onDelete={() => handleDelete (transport.id, transport.destination)}
                     onView={ () => handleView (transport.id)}
             
                   />
