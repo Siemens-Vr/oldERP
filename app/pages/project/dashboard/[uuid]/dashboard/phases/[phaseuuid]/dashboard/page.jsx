@@ -9,9 +9,10 @@ import Link from "next/link";
 import UpdateOutputPopup from '@/app/components/project/output/update';
 import ActionButton from "@/app/components/actionButton/actionButton";
 import Pagination from "@/app/components/pagination/pagination";
+import Swal from 'sweetalert2';
 
 const OutputsList = () => {
-    const { uuid } = useParams();
+    const { uuid, phaseuuid } = useParams();
     const router = useRouter();
     const [count, setCount] = useState(0);
     const [outputs, setOutputs] = useState([]);
@@ -21,13 +22,14 @@ const OutputsList = () => {
     const [selectedOutput, setSelectedOutput] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
+    const [deleting, setDeleting] = useState(false);
     
 
     // Fetch outputs function
     const fetchOutputs = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${config.baseURL}/outputs/${uuid}`);
+            const response = await fetch(`${config.baseURL}/outputs/${phaseuuid}`);
             if (response.ok) {
                 const data = await response.json();
                 setOutputs(data.outputs || []);
@@ -84,15 +86,28 @@ const OutputsList = () => {
        
         router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${Phases.uuid}/dashboard/${outputuuid}`);
       };
-      const handleDelete = async (outputuuid) => {
+      const handleDelete = async (outputuuid, name) => {
         if (!outputuuid) {
           console.error("Output UUID is missing");
           return;
         }
       
-        const confirmDelete = window.confirm("Are you sure you want to delete this output?");
-      
-        if (confirmDelete) {
+        const result = await Swal.fire({
+                       title: 'Are you sure?',
+                       text: `You are about to delete ${name} `,
+                       icon: 'warning',
+                       showCancelButton: true,
+                       confirmButtonColor: '#d33',
+                       cancelButtonColor: '#3085d6',
+                       confirmButtonText: 'Yes, delete',
+                       cancelButtonText: 'Cancel'
+                     });
+                     
+                     if (result.isConfirmed) {
+                       setDeleting(uuid);
+             
+           if (confirmDelete) {
+        
           try {
             const response = await fetch(`${config.baseURL}/outputs/${outputuuid}/delete`, {
               method: "GET",
@@ -102,7 +117,12 @@ const OutputsList = () => {
             });
       
             if (response.ok) {
-              alert("Output deleted successfully!");
+              Swal.fire({
+                title: 'Deleted!',
+                text: `${name} has been successfully deleted.`,
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+              });
               await fetchOutputs();
             } else {
               throw new Error("Failed to delete output");
@@ -113,6 +133,7 @@ const OutputsList = () => {
           }
         }
       };
+    };
 
       const handleUpdateClick = (output) => {
         setSelectedOutput(output);
@@ -158,7 +179,7 @@ const OutputsList = () => {
                                 <td>
                                     <ActionButton
                                         onEdit={() => handleUpdateClick(output)}
-                                        onDelete={() => handleDelete(output.uuid)}
+                                        onDelete={() => handleDelete(output.uuid, output.name)}
                                         onView={() => handleView(output.uuid)}   
                                     />
                                 </td>

@@ -7,7 +7,7 @@ import Navbar from "@/app/components/project/output/navbar/navbar";
 
 const OutputDetails = () => {
   const params = useParams();
-  const { uuid } = params;
+  const { uuid, phaseuuid } = params;
 
   const [outputDetails, setOutputDetails] = useState({
     name: "",
@@ -17,12 +17,13 @@ const OutputDetails = () => {
   });
 
   const fetchOutputData = async () => {
-    if (!uuid) return;
+    
+    if (!phaseuuid) return;
 
     try {
-      const outputRes = await fetch(`${config.baseURL}/outputs/${uuid}`);
+      const outputRes = await fetch(`${config.baseURL}/outputs/${phaseuuid}`);
       if (!outputRes.ok) throw new Error("Error fetching output data");
-
+  
       const outputData = await outputRes.json();
       setOutputDetails({
         name: outputData.name,
@@ -31,6 +32,7 @@ const OutputDetails = () => {
         completionDate: outputData.completionDate,
       });
     } catch (error) {
+      
       console.error("Failed to fetch output data:", error);
     }
   };

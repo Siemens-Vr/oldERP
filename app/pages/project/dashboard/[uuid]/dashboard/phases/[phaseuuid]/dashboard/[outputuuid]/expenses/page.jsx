@@ -3,13 +3,13 @@
 import React from "react";
 import ExpenseCard from "@/app/components/project/expenses/ExpenseCard";
 import styles from "@/app/styles/project/expenses/Expense.module.css";
-import {FaCar, FaBook, FaMoneyBill} from 'react-icons/fa';
+import {FaCar, FaBook, FaUser} from 'react-icons/fa';
 import { useParams } from "next/navigation";
 
 
 const Expenses = () => {
   const params = useParams()
-  const {uuid} = params
+  const {uuid, phaseuuid, outputuuid} = params
   console.log(params)
 
   return (
@@ -18,7 +18,7 @@ const Expenses = () => {
     <div className={styles.expenseList}>
       <ExpenseCard name="Transport" icon={<FaCar />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`} />
       <ExpenseCard name="Procurement" icon={<FaBook />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/procurement`} />
-      <ExpenseCard name="Budget" icon={<FaMoneyBill />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/budget`} />
+      <ExpenseCard name="Personnel" icon={<FaUser />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/personnel`} />
     </div>
   </div>
 );
