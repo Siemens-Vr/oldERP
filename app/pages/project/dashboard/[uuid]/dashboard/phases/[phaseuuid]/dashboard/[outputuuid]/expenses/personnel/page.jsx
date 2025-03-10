@@ -191,9 +191,7 @@ const PersonnelPage = () => {
           <tbody>
             {personnel.map((personnel) => (
               <tr key={personnel.id}>
-                <td>{personnel.itemName}</td>
-                <td>{personnel.type}</td>
-                <td>{personnel.suppliers}</td>
+                <td>{personnel.name}</td>
                 <td>
                   <ActionButton
                     onEdit={() => handleUpdateClick(personnel)}
