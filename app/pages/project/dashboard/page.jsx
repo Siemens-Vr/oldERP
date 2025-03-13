@@ -143,7 +143,7 @@ const result = await Swal.fire({
         e.preventDefault()
         // Call the API to add the new project
         try{
-        const response = await fetch(`${config.baseURL}/projects`, {
+        const response = await fetch(`${config.baseURL}/projects/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

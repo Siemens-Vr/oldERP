@@ -15,10 +15,11 @@ const TransportPage = () => {
   const [transport, setTransport] = useState([]);
   const [count, setCount] = useState(0);
   const params= useParams()
-  const {uuid, id, phaseuuid, outputuuid}= params
+  const {uuid, phaseuuid, outputuuid,id}= params
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const { replace } = useRouter();
+  const router = useRouter();
   const q = searchParams.get("q") || "";
   const page = searchParams.get("page") || 0;
   const filter = searchParams.get("filter") || "all";
@@ -31,12 +32,13 @@ const TransportPage = () => {
     if (!searchParams.has("page")) {
       const params = new URLSearchParams(searchParams);
       params.set("page", 0);
-      replace(`${window.location.pathname}?${params.toString()}`);
+      router.replace(`${window.location.pathname}?${params.toString()}`);
     }
-  }, []);
+  }, [searchParams, router]);
 
 
   console.log("fetching uuid:", uuid)
+
 
   useEffect(() => {
     fetchTransport();
@@ -45,7 +47,7 @@ const TransportPage = () => {
   const fetchTransport = async () => {
     setLoading(true); 
     try {
-      let url = `${config.baseURL}/transports/${uuid}?`;
+      let url = `${config.baseURL}/transports/${outputuuid}?`;
       const params = new URLSearchParams();
 
       if (q) params.append("q", q);
@@ -92,10 +94,11 @@ const TransportPage = () => {
     });
   };
 
-  const handleView = (id) => {
-    window.location.href = `/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport/${id}/`;
-  };
+ 
+  
+  
   const handleDelete = async (id, name) => {
+    console.log(uuid, phaseuuid, outputuuid, id)
     if (!id) {
       console.error("Transport data is not loaded");
       return;
@@ -115,10 +118,10 @@ const TransportPage = () => {
                   if (result.isConfirmed) {
                     setDeleting(uuid);
   
-    if (confirmDelete) {
+    // if (confirmDelete) {
       try {
         const response = await fetch(`${config.baseURL}/transports/${id}/delete`, {
-          method: "GET",
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
@@ -131,6 +134,11 @@ const TransportPage = () => {
             icon: 'success',
             confirmButtonColor: '#3085d6',
           });
+
+          await fetchTransport();
+          window.location.reload();
+
+  
 // Immediate navigation without state updates
           // window.location.href = `/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`;
         } else {
@@ -142,7 +150,7 @@ const TransportPage = () => {
       }
     }
   };
-};
+// };
 
   const handleUpdateClick = (transport) => {
     setSelectedTransport(transport);
@@ -157,6 +165,20 @@ const TransportPage = () => {
   const handleSavePopup = async () => {
     handleClosePopup();
     await fetchTransport();
+  };
+  const handleView = (id) => {
+    console.log("View transport UUID:", id);
+    console.log("UUID:", uuid);
+    console.log("Phase UUID:", phaseuuid);
+    console.log("Output UUID:", outputuuid);
+  
+    if (!id || !uuid || !phaseuuid || !outputuuid) {
+      console.error("One or more required parameters are missing");
+      return;
+    }
+  
+    router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport/${id}`);
+    
   };
 
   return (

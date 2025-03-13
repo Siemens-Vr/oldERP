@@ -1,19 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ExpenseCard from "@/app/components/project/expenses/ExpenseCard";
 import styles from "@/app/styles/project/expenses/Expense.module.css";
 import {FaCar, FaBook, FaUser} from 'react-icons/fa';
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import Navbar from "@/app/components/project/output/navbar/navbar";
 
 
 const Expenses = () => {
   const params = useParams()
-  const {uuid, phaseuuid, outputuuid} = params
-  console.log(params)
+  const searchParams = useSearchParams();
+  const [output, setOutput] = useState([]);
+  const [phases, setPhases] = useState([]);
+  const {uuid, phaseuuid, outputuuid} =params;
+  console.log("Params:", params);
+
 
   return (
     <div className={styles.container}>
+      <Navbar />
     <h2>Expense Categories</h2>
     <div className={styles.expenseList}>
       <ExpenseCard name="Transport" icon={<FaCar />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`} />

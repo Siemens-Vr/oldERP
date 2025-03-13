@@ -3,11 +3,12 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { config } from "/config";
 import styles from "@/app/styles/supplier/supplier.module.css";
+import style from "@/app/styles/project/project/project.module.css";
 import Search from "@/app/components/search/searchFilter";
 import AddOutputModal from '@/app/components/project/output/AddOutput';
 import Link from "next/link";
 import UpdateOutputPopup from '@/app/components/project/output/update';
-import ActionButton from "@/app/components/actionButton/actionButton";
+import ActionButton from "@/app/components/project/output/actionButton";
 import Pagination from "@/app/components/pagination/pagination";
 import Swal from 'sweetalert2';
 
@@ -22,7 +23,16 @@ const OutputsList = () => {
     const [selectedOutput, setSelectedOutput] = useState(null);
     const [showPopup, setShowPopup] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
+    const [isAdding, setIsAdding] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [newOutput, setNewOutput] = useState({
+        name: "",
+        completionDate: "",
+        status: "",
+        description: "",
+    });
+    const [showOutputInput, setShowOutputInput] =useState(false) ; 
+
     
 
     // Fetch outputs function
@@ -32,7 +42,7 @@ const OutputsList = () => {
             const response = await fetch(`${config.baseURL}/outputs/${phaseuuid}`);
             if (response.ok) {
                 const data = await response.json();
-                setOutputs(data.outputs || []);
+                setOutputs(data);
             } else {
                 console.error("Failed to fetch outputs");
             }
@@ -54,25 +64,33 @@ const OutputsList = () => {
         fetchOutputs(); // Now fetchOutputs is defined
     };
 
-    const addOutput = async (newOutput) => {
+    const addOutput = async () => {
         try {
-            const response = await fetch(`${config.baseURL}/outputs`, {
+            const response = await fetch(`${config.baseURL}/outputs/${phaseuuid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newOutput),
             });
-
+    
             if (response.ok) {
-              setSuccessMessage("Phase added successfully");
-                    setTimeout(() => setSuccessMessage(""), 3000);
-            }
-            else{
-              console.error('Failed to add output');
+                fetchOutputs();
+                setShowOutputInput(false);
+                setSuccessMessage("Output added successfully");
+                setTimeout(() => setSuccessMessage(""), 3000);
+                setNewOutput({
+                    name: "",
+                    description: "",
+                    completionDate: "",
+                    status: "",
+                });
+            } else {
+                console.error("Failed to add output");
             }
         } catch (error) {
-            console.error('Error adding output:', error);
+            console.error("Error adding output:", error);
+        } finally {
+            closeModal();
         }
-        closeModal();
     };
     const handleView = (outputuuid) => {
  
@@ -84,56 +102,58 @@ const OutputsList = () => {
         }
     
        
-        router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${Phases.uuid}/dashboard/${outputuuid}`);
+        router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}`);
       };
       const handleDelete = async (outputuuid, name) => {
         if (!outputuuid) {
-          console.error("Output UUID is missing");
-          return;
+            console.error("Output UUID is missing");
+            return;
         }
-      
+    
         const result = await Swal.fire({
-                       title: 'Are you sure?',
-                       text: `You are about to delete ${name} `,
-                       icon: 'warning',
-                       showCancelButton: true,
-                       confirmButtonColor: '#d33',
-                       cancelButtonColor: '#3085d6',
-                       confirmButtonText: 'Yes, delete',
-                       cancelButtonText: 'Cancel'
-                     });
-                     
-                     if (result.isConfirmed) {
-                       setDeleting(uuid);
-             
-           if (confirmDelete) {
-        
-          try {
-            const response = await fetch(`${config.baseURL}/outputs/${outputuuid}/delete`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-      
-            if (response.ok) {
-              Swal.fire({
-                title: 'Deleted!',
-                text: `${name} has been successfully deleted.`,
-                icon: 'success',
-                confirmButtonColor: '#3085d6',
-              });
-              await fetchOutputs();
-            } else {
-              throw new Error("Failed to delete output");
+            title: 'Are you sure?',
+            text: `You are about to delete ${name}`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete',
+            cancelButtonText: 'Cancel'
+        });
+    
+        if (result.isConfirmed) {
+            setDeleting(outputuuid);
+    
+            try {
+                const response = await fetch(`${config.baseURL}/outputs/${phaseuuid}/${outputuuid}/`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                });
+    
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: `${name} has been successfully deleted.`,
+                        icon: 'success',
+                        confirmButtonColor: '#3085d6',
+                    });
+    
+                    // ✅ Remove deleted output from state instead of reloading
+                    setOutputs((prevOutputs) => prevOutputs.filter(output => output.uuid !== outputuuid));
+    
+                } else {
+                    throw new Error("Failed to delete output");
+                }
+            } catch (error) {
+                console.error("Error deleting output:", error);
+                alert("Failed to delete output. Please try again.");
+            } finally {
+                setDeleting(null);
             }
-          } catch (error) {
-            console.error("Error deleting output:", error);
-            alert("Failed to delete output. Please try again.");
-          }
         }
-      };
     };
+    
+ 
 
       const handleUpdateClick = (output) => {
         setSelectedOutput(output);
@@ -156,7 +176,8 @@ const OutputsList = () => {
           {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
             <div className={styles.top}>
                 <Search placeholder="Search for an output..." />
-                <button className={styles.addButton} onClick={openModal}>Add</button>
+                <button onClick={() => setShowOutputInput(true)} disabled={isAdding} className={style.addButton}>Add
+</button>
             </div>
             {Array.isArray(outputs) && outputs.length > 0 ? (
                 <table className={styles.table}>
@@ -192,6 +213,72 @@ const OutputsList = () => {
             )}
             <Pagination count={count} />
             <AddOutputModal isModalOpen={isModalOpen} closeModal={closeModal} addOutput={addOutput} />
+            {showOutputInput && (
+                <div className={style.modalOverlay}>
+                    <div className={style.modalContent}>
+                        <h3>Add Output</h3>
+                        <div className={style.divInput}>
+                            <label htmlFor="Name">Name</label>
+                            <input
+                                type="text"
+                                value={newOutput.name}
+                                onChange={(e) => setNewOutput({ ...newOutput, name: e.target.value })}
+                                placeholder="Output Name"
+                                required
+                                className={style.inputField}
+                            />
+                        </div>
+                        <div className={style.divInput}>
+                            <label htmlFor="Completion Date">Completion Date</label>
+                            <input
+                                type="date"
+                                value={newOutput.completionDate}
+                                onChange={(e) =>
+                                    setNewOutput({ ...newOutput, completionDate: e.target.value })
+                                }
+                                required
+                                className={style.inputField}
+                            />
+                        </div>
+                        <div className={style.divInput}>
+                        <label htmlFor="Status">Status</label>
+                        <select
+                            value={newOutput.status}
+                            onChange={(e) =>
+                                setNewOutput({ ...newOutput, status: e.target.value })
+                            }
+                            className={style.inputField}
+                        >
+                            <option value="">Select Status</option>
+                            <option value="todo">To Do</option>
+                            <option value="progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        </div>
+                        <div className={style.divInput}>
+                            <label htmlFor="description">Description</label>
+                            <input
+                                type="text"
+                                value={newOutput.description}
+                                onChange={(e) => setNewOutput({ ...newOutput, description: e.target.value })}
+                                className={style.inputField}
+                                required
+                            />
+                        </div>
+                        <div className={style.modalActions}>
+                        <button onClick={addOutput} disabled={isAdding} className={style.addButton}>
+                                {isAdding ? "Adding..." : "Add"}
+                            </button>
+                            <button
+                                onClick={() => setShowOutputInput(false)}
+                                className={style.closeButton}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showPopup && (
         <UpdateOutputPopup

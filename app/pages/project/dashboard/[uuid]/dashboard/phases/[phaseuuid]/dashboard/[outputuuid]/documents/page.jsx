@@ -6,6 +6,7 @@ import { MdFolder} from "react-icons/md";
 import { config } from "/config";
 import UploadDropdown from '@/app/components/uploadDropdown/uploadDropdown';
 import { useParams } from 'next/navigation';
+import Navbar from "@/app/components/project/output/navbar/navbar";
 
 // Action Types
 const ACTION_TYPES = {
@@ -761,6 +762,7 @@ const Documents = () => {
     return (
         
         <div className={styles.inputDocumentSection}>
+            <Navbar />
             <div className={styles.inputDocumentHeader}>
                 {state.breadcrumbs.length > 0 && (
                     <button onClick={handleBackToParent}>

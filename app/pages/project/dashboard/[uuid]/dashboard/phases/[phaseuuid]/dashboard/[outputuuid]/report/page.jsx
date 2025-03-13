@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { config } from "/config";
+import Navbar from "@/app/components/project/output/navbar/navbar";
 import styles from "@/app/styles/project/project/project.module.css";
 import {
     FaUpload,
@@ -29,7 +30,7 @@ const Report = () => {
     const [menuOpen, setMenuOpen] = useState({}); 
     const menuRefs = useRef({}); 
     const params = useParams();
-    const { uuid } = params;
+    const { uuid, outputuuid } = params;
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
@@ -62,7 +63,7 @@ const Report = () => {
     }, [successMessage, errorMessage]);
     const fetchFiles = async () => {
         try {
-            const response = await fetch(`${config.baseURL}/reports/${uuid}`);
+            const response = await fetch(`${config.baseURL}/reports/${outputuuid}`);
             const data = await response.json();
             if (response.ok) {
                 setFileList(data.reports.rows);
@@ -88,7 +89,7 @@ const Report = () => {
         formData.append("report", selectedFile);
 
         try {
-            const response = await fetch(`${config.baseURL}/reports/${uuid}`, {
+            const response = await fetch(`${config.baseURL}/reports/${outputuuid}`, {
                 method: "POST",
                 body: formData,
             });
@@ -98,7 +99,7 @@ const Report = () => {
                 setModalOpen(false);
                 setSuccessMessage("Report uploaded successfully!");
             } else {
-                setErrorMessage("Error uploading report")
+                // setErrorMessage("Error uploading report")
                 console.error("Error uploading file:", await response.text());
             }
         } catch (error) {
@@ -123,7 +124,7 @@ const Report = () => {
                           if (result.isConfirmed) {
                             setDeleting(uuid);
           
-            if (confirmDelete) {
+            // if (confirmDelete) {
 
         try {
             const response = await fetch(
@@ -151,7 +152,7 @@ const Report = () => {
         }
     };
 };
-    };
+    // };
 
     const handleView = (file) => {
         window.open(`${config.baseURL}${file.document}`, "_blank");
@@ -219,6 +220,7 @@ const Report = () => {
 
     return (
         <div className={styles.container}>
+            <Navbar />
             {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
             {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
             <div className={styles.topButtons} style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>

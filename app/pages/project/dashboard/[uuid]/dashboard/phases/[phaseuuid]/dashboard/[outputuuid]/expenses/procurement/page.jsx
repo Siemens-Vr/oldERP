@@ -44,7 +44,7 @@ const ProcurementPage = () => {
     setLoading(true); 
     try {
       // Update the URL to match the API structure
-      let url = `${config.baseURL}/procurements/${uuid}?`;
+      let url = `${config.baseURL}/procurements/${outputuuid}?`;
       const params = new URLSearchParams();
 
       if (q) params.append("q", q);
@@ -120,10 +120,10 @@ const ProcurementPage = () => {
               if (result.isConfirmed) {
                 setDeleting(uuid);
       
-    if (confirmDelete) {
+  
       try {
-        const response = await fetch(`${config.baseURL}/procurements/project/${procurementuuid}/delete`, {
-          method: "GET",
+        const response = await fetch(`${config.baseURL}/procurements/output/${procurementuuid}/delete`, {
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
@@ -146,7 +146,6 @@ const ProcurementPage = () => {
       }
     }
   };
-};
 
   const handleUpdateClick = (procurement) => {
     setSelectedProcurement(procurement);

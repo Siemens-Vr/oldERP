@@ -24,6 +24,8 @@
   .navLinks {
     display: flex;
     gap: 1rem;
+    align-items: left;
+    margin-left: 1100px;
   }
   
   .navLinks button {

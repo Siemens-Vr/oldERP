@@ -31,6 +31,8 @@ const ProcurementAddPage = () => {
        
         
     });
+    console.log(formData);
+    console.log(outputuuid);
 
     const [successMessage, setSuccessMessage] = useState("");
 
@@ -67,7 +69,7 @@ const ProcurementAddPage = () => {
     }
     
         try {
-            const response = await fetch(`${config.baseURL}/procurements/${uuid}`, {
+            const response = await fetch(`${config.baseURL}/procurements/${outputuuid}`, {
                 method: "POST",
                 body: formDataToSend, // Use FormData as the request body
             });

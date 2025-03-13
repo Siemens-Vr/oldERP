@@ -29,10 +29,11 @@ const Phases = () => {
 
     const fetchPhases = async () => {
         try {
-            const response = await fetch(`${config.baseURL}/phases/${uuid}`);
+            const response = await fetch(`${config.baseURL}/milestones/${uuid}`);
             if (response.ok) {
                 const data = await response.json();
-               setPhases(Array.isArray(data.phases) ? data.phases : []);
+               setPhases(data);
+               console.log(data);
             } else {
                 console.error("Failed to fetch phases");
             }
@@ -67,18 +68,19 @@ const Phases = () => {
 
             try {
                 const payload = {
-                    phases: [
-                        {
+                 
                             name: newPhase.name,
                             startDate: new Date(newPhase.startDate).toISOString(),
                             endDate: new Date(newPhase.endDate).toISOString(),
                             status: newPhase.status,
-                            deliverables: newPhase.deliverables,
-                        },
-                    ],
                 };
+console.log(payload)
+if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.status) {
+    showErrorAlert("All fields (Name, Start Date, End Date, and Status) are required.");
+    return;
+}
 
-                const response = await fetch(`${config.baseURL}/phases/${uuid}/`, {
+                const response = await fetch(`${config.baseURL}/milestones/${uuid}/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -89,14 +91,13 @@ const Phases = () => {
                 if (response.ok) {
                     fetchPhases();
                     setShowPhaseInput(false);
-                    setSuccessMessage("Phase added successfully");
+                    setSuccessMessage("Milestone added successfully");
                     setTimeout(() => setSuccessMessage(""), 3000);
                     setNewPhase({
                         name: "",
                         startDate: "",
                         endDate: "",
                         status: "",
-                        deliverables: [],
                     });
                 } else {
                     const errorText = await response.text();
@@ -110,7 +111,7 @@ const Phases = () => {
                 setIsAdding(false);
             }
         } else {
-            alert("Phase name is required!");
+            alert("Milestone name is required!");
         }
     };
 
@@ -137,7 +138,7 @@ const Phases = () => {
         console.log("Deleting phase with UUID:", uuid, phaseToDelete.uuid);
     
         try {
-            const response = await fetch(`${config.baseURL}/phases/${uuid}/${phaseToDelete.uuid}`, {
+            const response = await fetch(`${config.baseURL}/milestones/delete/${phaseToDelete.uuid}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -218,7 +219,7 @@ const Phases = () => {
             console.log("Updating phase with:", uuid, editPhaseData.uuid);
 
             const response = await fetch(
-                `${config.baseURL}/phases/${uuid}/${editPhaseData.uuid}`,
+                `${config.baseURL}/milestones/update/${editPhaseData.uuid}`,
                 {
                     method: "PUT",
                     headers: {
@@ -248,7 +249,7 @@ const Phases = () => {
         // <div className= {styles.container}></div>
         <div className={styles.phases}>
             <div className = {styles.top}>
-                <h2>Phases</h2>
+                <h2>Milestones</h2>
              {successMessage && <p className={styles.successMessage}>{successMessage}</p>} 
                 <button
                     onClick={() => setShowPhaseInput(true)}

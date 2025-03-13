@@ -4,9 +4,11 @@ import styles from '@/app/styles/supplier/UpdateSupplierPopup.module.css';
 import { config } from "/config";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useParams, useRouter } from "next/navigation";
 
 const UpdateOutputPopup = ({ output, onClose, onSave }) => {
-    
+const params = useParams();
+  const {phaseuuid, outputuuid } = params;
     // console.log(supplier)
     const [formData, setFormData] = useState({
         name: '',
@@ -37,26 +39,30 @@ const UpdateOutputPopup = ({ output, onClose, onSave }) => {
     
     
     const handleSave = async () => {
-        const formDataToSend = new FormData();     
-        try {
-            const url = `${config.baseURL}/outputs/${output.uuid}/update`;
-            console.log('Update URL:', url);
-            console.log('Form Data being sent:', Object.fromEntries(formDataToSend));
+        const updatedData = { ...formData }; // Clone formData to avoid mutation
     
+        try {
+            const url = `${config.baseURL}/outputs/${phaseuuid}/${output.uuid}`;
+            console.log('Update URL:', url);
+            console.log('Data being sent:', updatedData);
+        
             const response = await fetch(url, {
-                method: 'PATCH',
-                body: formDataToSend,
+                method: 'PUT',
+                headers: {
+                    "Content-Type": "application/json",  // Ensure backend sees it as JSON
+                },
+                body: JSON.stringify(updatedData),
             });
     
-            // Log the response
             const responseData = await response.json();
             console.log('Update Response:', responseData);
+    
             if (response.ok) {
-               alert('Output updated successfully!');
+                alert('Output updated successfully!');
                 await onSave(true);
             } else {
                 console.error('Failed to update output', responseData);
-              alert(responseData.message || 'Failed to update the output!');
+                alert(responseData.message || 'Failed to update the output!');
                 onSave(false);
             }
         } catch (error) {
@@ -65,6 +71,8 @@ const UpdateOutputPopup = ({ output, onClose, onSave }) => {
             onSave(false);
         }
     };
+    
+    
     return (
         <div className={styles.overlay}>
             <div className={styles.popup}>
@@ -116,10 +124,10 @@ const UpdateOutputPopup = ({ output, onClose, onSave }) => {
                             onChange={handleChange}
                             
                         >
-                            <option value="">Select Type</option>
-                            <option value="Claim">To-do</option>
-                            <option value="Imprest">Progress</option>
-                            <option value="Petty Cash">Completed</option>
+                            <option value="">Select Status</option>
+                            <option value="To-do">To-do</option>
+                            <option value="Progress">Progress</option>
+                            <option value="Completed">Completed</option>
                         </select>
                     </div>
 

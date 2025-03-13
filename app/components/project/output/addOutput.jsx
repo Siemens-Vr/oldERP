@@ -17,6 +17,7 @@ const AddOutputModal = ({ isModalOpen, closeModal, addOutput }) => {
         const newErrors = {};
         if (!newOutput.name) newErrors.name = "Output name is required";
         if (!newOutput.completionDate) newErrors.completionDate = "Completion date is required";
+        if (!newOutput.status) newErrors.status = "Status is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };

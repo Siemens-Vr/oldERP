@@ -61,7 +61,7 @@ const AddTransportPage = () => {
     });
 
     try {
-      const response = await fetch(`${config.baseURL}/transports/${uuid}`, {
+      const response = await fetch(`${config.baseURL}/transports/${outputuuid}`, {
         method: "POST",
         body: formDataToSend,
       });

@@ -1,11 +1,14 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; 
+import { usePathname, useParams } from "next/navigation"; 
 import styles from "@/app/styles/project/navbar/navbar.module.css"; 
 
-const Navbar = ({ projectID, outputName, phaseuuid, outputuuid  }) => {
+const Navbar = ({ outputName }) => {
   const pathname = usePathname(); 
+  const params = useParams();
+  const { uuid, phaseuuid, outputuuid } = params;
+  console.log("Params in parent:", params);
 
   return (
     <div className={styles.navbarPage}>
@@ -14,11 +17,11 @@ const Navbar = ({ projectID, outputName, phaseuuid, outputuuid  }) => {
       </div>
       <nav className={styles.navbar}>
         <div className={styles.brand}>
-        <h1>Output Details</h1>
+        {/* <h1>Output Details</h1> */}
         </div>
         <div className={styles.navLinks}>
 
-          <Link href={`/pages/project/dashboard/${projectID}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/documents`}>
+          <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/documents`}>
             <button
               className={pathname.includes("documents") ? styles.active : ""}
             >
@@ -26,15 +29,7 @@ const Navbar = ({ projectID, outputName, phaseuuid, outputuuid  }) => {
             </button>
           </Link>
 
-          <Link href={`/pages/project/dashboard/${projectID}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/deliverables`}>
-            <button
-              className={pathname.includes("deliverables") ? styles.active : ""}
-            >
-              Deliverables
-            </button>
-          </Link>
-
-          <Link href={`/pages/project/dashboard/${projectID}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses`}>
+          <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses`}>
             <button
               className={pathname.includes("expenses") ? styles.active : ""}
             >
@@ -42,7 +37,7 @@ const Navbar = ({ projectID, outputName, phaseuuid, outputuuid  }) => {
             </button>
           </Link>
 
-          <Link href={`/pages/project/dashboard/${projectID}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/report`}>
+          <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/report`}>
             <button
               className={pathname.includes("report") ? styles.active : ""}
             >
