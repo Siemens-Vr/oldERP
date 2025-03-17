@@ -219,8 +219,11 @@ const Report = () => {
     };
 
     return (
+        <div className={styles.projectDetails}>
+        <nav className={styles.navbar}>
+          <Navbar />
+          </nav>
         <div className={styles.container}>
-            <Navbar />
             {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
             {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
             <div className={styles.topButtons} style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
@@ -268,6 +271,7 @@ const Report = () => {
                     </div>
                 </div>
             )}
+        </div>
         </div>
     );
 };

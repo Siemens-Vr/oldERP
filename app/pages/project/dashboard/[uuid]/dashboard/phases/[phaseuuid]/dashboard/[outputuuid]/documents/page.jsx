@@ -760,9 +760,12 @@ const Documents = () => {
     };
 
     return (
-        
+        <div className={styles.projectDetails}>
+        <nav className={styles.navbar}>
+          <Navbar />
+          </nav>
         <div className={styles.inputDocumentSection}>
-            <Navbar />
+            
             <div className={styles.inputDocumentHeader}>
                 {state.breadcrumbs.length > 0 && (
                     <button onClick={handleBackToParent}>
@@ -881,7 +884,7 @@ const Documents = () => {
                 </div>
             
         )}
-
+</div>
 
             </div>
         );
