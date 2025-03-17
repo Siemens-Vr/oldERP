@@ -15,7 +15,8 @@ const TransportPage = () => {
   const [transport, setTransport] = useState([]);
   const [count, setCount] = useState(0);
   const params= useParams()
-  const {uuid, phaseuuid, outputuuid,id}= params
+  const {uuid, phaseuuid, outputuuid}= params
+  const id= transport.uuid
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const { replace } = useRouter();

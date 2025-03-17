@@ -127,9 +127,30 @@
     align-items: center;
     padding: 0 20px;
 }
+.project{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #1e90ff
+}
 
 .projectDropdown {
+    margin-right: auto;
+   
+}
+.milestoneButton{
+    margin-left:auto;
+}
+.milestoneDropdown {
     margin-left: auto;
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 1px solid #1a253a;
+    border-radius: 4px;
+    color: black;
 }
 
 .dropdown {
@@ -186,13 +207,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    margin-left: auto;
 }
 
-.projectName {
-    font-size: 28px;
+/* .projectName {
+    font-size: 24px;
     color: #1e90ff;
     cursor: pointer;
-}
+} */
 
 .navButtons button {
     margin-left: 10px;
@@ -1457,7 +1479,7 @@
 }
 
 .card {
-    background-color: #262262;
+    background-color: #1a253a;
     color: white;
     border-radius: 10px;
     padding: 20px;

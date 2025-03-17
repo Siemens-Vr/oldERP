@@ -42,11 +42,11 @@ const OutputDetails = () => {
   }, [uuid]);
 
   return (
-    <div className={styles.outputPage}>
+    <div className={styles.projectDetails}>
       <nav className={styles.navbar}>
         <Navbar />
-      </nav>
-      <div className={styles.outputDetails}>
+        </nav>
+      <div className={styles.projectDetail}>
         <div className={styles.card}>
           <h2>Name</h2>
           <p>{outputDetails.name}</p>
@@ -56,15 +56,16 @@ const OutputDetails = () => {
           <p>{outputDetails.status}</p>
         </div>
         <div className={styles.card}>
-          <h2>Description</h2>
-          <p>{outputDetails.description}</p>
-        </div>
-        <div className={styles.card}>
           <h2>Completion Date</h2>
           <p>{outputDetails.completionDate}</p>
         </div>
+        </div>
+        <div className={styles.card}>
+          <h2>Description</h2>
+          <p>{outputDetails.description}</p>
+        </div>
+       
       </div>
-    </div>
   );
 };
 

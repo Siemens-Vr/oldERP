@@ -769,11 +769,11 @@ const Documents = () => {
                         <FaArrowLeft /> Back
                     </button>
                 )}
-                <h2>
+                {/* <h2>
                     {state.currentFolder 
                         ? state.currentFolder.name 
                         : 'Documents'}
-                </h2>
+                </h2> */}
 
                 <UploadDropdown setModalStates={setModalStates} />
             </div>
