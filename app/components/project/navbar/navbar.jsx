@@ -1,31 +1,45 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; 
+import { usePathname, useParams } from "next/navigation"; 
 import styles from "@/app/styles/project/navbar/navbar.module.css"; 
 
-const Navbar = ({ projectID, projectName }) => {
+const Navbar = ({ }) => {
   const pathname = usePathname(); 
+  const params = useParams();
+  const { uuid, phaseuuid, outputuuid } = params;
+  console.log("Params in parent:", params);
 
   return (
-    <div className={styles.navbarPage}>
-      <div className={styles.top}>
-        <h1>{projectName}</h1>
-      </div>
-      <nav className={styles.navbar}>
+    <div className={styles.navbar}>
         <div className={styles.brand}>
           <h1>Dashboard</h1>
         </div>
         <div className={styles.navLinks}>
-          <Link href={`/pages/project/dashboard/${projectID}/dashboard/phases`}>
+        <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/documents`}>
             <button
-              className={pathname.includes("phases") ? styles.active : ""}
+              className={pathname.includes("documents") ? styles.active : ""}
             >
-              Milestones
+              Documents
+            </button>
+          </Link>
+
+          <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses`}>
+            <button
+              className={pathname.includes("expenses") ? styles.active : ""}
+            >
+              Expenses
+            </button>
+          </Link>
+
+          <Link href={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/report`}>
+            <button
+              className={pathname.includes("report") ? styles.active : ""}
+            >
+              Report
             </button>
           </Link>
         </div>
-      </nav>
     </div>
   );
 };

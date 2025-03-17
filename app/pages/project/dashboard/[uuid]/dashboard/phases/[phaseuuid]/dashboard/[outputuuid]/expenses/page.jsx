@@ -20,7 +20,7 @@ const Expenses = () => {
   return (
     <div className={styles.container}>
       <Navbar />
-    <h2>Expense Categories</h2>
+    {/* <h2>Expense Categories</h2> */}
     <div className={styles.expenseList}>
       <ExpenseCard name="Transport" icon={<FaCar />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`} />
       <ExpenseCard name="Procurement" icon={<FaBook />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/procurement`} />

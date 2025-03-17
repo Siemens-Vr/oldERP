@@ -1,31 +1,40 @@
 
-.navbarPage{
-  color: white;
+/* .navbarPage{
+  color: rgb(143, 0, 0);
   padding: 10px;
-}
+} */
 
 .navbarPage h1{
-  color: white;
+  color: rgb(255, 255, 255);
   font-size: 18px;
-  font-weight: 700;
-  text-transform:capitalize;
+  font-weight: 700; 
+   text-transform:capitalize;
 }
 .navbar {
-    display: flex;
+  display: flex;
     justify-content: space-between;
     align-items: center;
-    color: white;
+    padding: 0 20px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #1e90ff
+
+   
+   
   }
   .brand h1{
     font-size: 18px;
     color: #1e90ff;
+    margin-left: auto;
+   
   }
   
   .navLinks {
     display: flex;
     gap: 1rem;
-    align-items: left;
-    margin-left: 1100px;
+    margin-right: auto;
+
+
   }
   
   .navLinks button {
@@ -37,6 +46,7 @@
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: background-color 0.3s;
+    margin-top: auto;
   }
   
   .navLinks button:hover {
