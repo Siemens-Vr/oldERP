@@ -84,22 +84,26 @@ const Report = () => {
             alert("Please select a file to upload.");
             return;
         }
+    
         setIsLoading(true);
         const formData = new FormData();
-        formData.append("report", selectedFile);
-
+        formData.append("report", selectedFile); 
+    
         try {
             const response = await fetch(`${config.baseURL}/reports/${outputuuid}`, {
                 method: "POST",
                 body: formData,
+                headers: {
+                   
+                },
             });
+    
             if (response.ok) {
                 fetchFiles();
                 setSelectedFile(null);
                 setModalOpen(false);
                 setSuccessMessage("Report uploaded successfully!");
             } else {
-                // setErrorMessage("Error uploading report")
                 console.error("Error uploading file:", await response.text());
             }
         } catch (error) {
@@ -108,6 +112,8 @@ const Report = () => {
             setIsLoading(false);
         }
     };
+    
+    
 
     const handleDelete = async (file, name) => {
          const result = await Swal.fire({
@@ -220,10 +226,11 @@ const Report = () => {
 
     return (
         <div className={styles.projectDetails}>
-        <nav className={styles.navbar}>
-          <Navbar />
-          </nav>
+            <nav className={styles.navbar}>
+                <Navbar />
+            </nav>
         <div className={styles.container}>
+           
             {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
             {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
             <div className={styles.topButtons} style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
