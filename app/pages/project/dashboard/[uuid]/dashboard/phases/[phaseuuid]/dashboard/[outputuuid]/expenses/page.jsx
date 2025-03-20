@@ -28,7 +28,7 @@ const Expenses = () => {
     <div className={styles.expenseList}>
       <ExpenseCard name="Transport" icon={<FaCar />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport`} />
       <ExpenseCard name="Procurement" icon={<FaBook />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/procurement`} />
-      <ExpenseCard name="Personnel" icon={<FaUser />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/personnel`} />
+      {/* <ExpenseCard name="Personnel" icon={<FaUser />} link={`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/personnel`} /> */}
     </div>
   </div>
   </div>

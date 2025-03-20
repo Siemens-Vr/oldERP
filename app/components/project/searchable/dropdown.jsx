@@ -119,8 +119,9 @@ const DropDown = () => {
   return (
       <div className={styles.projectInfoContainer}>
         {/* Navbar */}
+        <h1 className={styles.project}>Project</h1>
         <div className={styles.project}>
-
+        
         <div className={styles.projectDropdown}>
             <select
                 onChange={(e) => handleProjectChange(e.target.value)}
@@ -137,22 +138,6 @@ const DropDown = () => {
               ))}
             </select>
           </div>
-           <div className={styles.milestoneDropdown}>
-              <select
-                  onChange={(e) => handleMilestoneChange(e.target.value)}
-                  value={phaseuuid || ""}
-                  className={styles.dropdown}
-              >
-                <option value="" disabled>
-                  Select a Milestone
-                </option>
-                {phases.map((phase) => (
-                    <option key={phase.phaseuuid} value={phase.phaseuuid}>
-                      {phase.name}
-                    </option>
-                ))}
-              </select>
-              </div>
           
             </div> 
       </div>

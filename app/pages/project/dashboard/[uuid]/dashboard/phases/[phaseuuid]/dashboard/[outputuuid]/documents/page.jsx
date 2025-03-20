@@ -7,6 +7,7 @@ import { config } from "/config";
 import UploadDropdown from '@/app/components/uploadDropdown/uploadDropdown';
 import { useParams } from 'next/navigation';
 import Navbar from "@/app/components/project/output/navbar/navbar";
+import Swal from "sweetalert2";
 
 // Action Types
 const ACTION_TYPES = {
@@ -234,6 +235,8 @@ const Documents = () => {
     const [actionMenuPosition, setActionMenuPosition] = useState({ x: 0, y: 0 });
     const [viewUrl, setViewUrl] = useState(null);
     const [showView, setShowView] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const [modalStates, setModalStates] = useState({
         folderModal: false,
@@ -242,33 +245,34 @@ const Documents = () => {
     });
     const [folderName, setFolderName] = useState("")
 
-    const [menuOpen, setMenuOpen] = useState(null);
-    const menuRef = useRef(null);
+    const [menuOpen, setMenuOpen] = useState({});
+    const menuRefs = useRef({}); 
 
     const params = useParams()
-    const {uuid} = params
+    const {uuid, outputuuid} = params
 
     console.log('This is the folder name', folderName)
 
 
 //menu 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setMenuOpen(null);
-            }
-        };
+useEffect(() => {
+    const handleClickOutside = (event) => {
+        let isClickInsideMenu = Object.values(menuRefs.current).some((menu) => menu && menu.contains(event.target));
+        if (!isClickInsideMenu) {
+            setMenuOpen({});
+        }
+    };
 
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+}, []);
 
     // Fetch initial folders
     const fetchInitialFolders = async () => {
         try {
-            const response = await fetch(`${config.baseURL}/documents/${uuid}/folders`);
+            const response = await fetch(`${config.baseURL}/documents/${outputuuid}/folders`);
             if (!response.ok) throw new Error('Failed to fetch folders');
             
             const result = await response.json();
@@ -297,12 +301,12 @@ const Documents = () => {
         if (options.parentFolderId) {
             console.log("parentFolderid", options.parentFolderId)
             // If we have a parent folder ID, it means we're dealing with a nested subfolder
-            apiUrl = `${config.baseURL}/documents/${uuid}/${options.parentFolderId}/${folderId}`;
+            apiUrl = `${config.baseURL}/documents/${outputuuid}/${options.parentFolderId}/${folderId}`;
             // apiUrl = `${config.baseURL}/documents/${uuid}/${folderId}`;
 
         } else {
             // If no parent folder ID, we're dealing with a root-level folder
-            apiUrl = `${config.baseURL}/documents/${uuid}/${folderId}`;
+            apiUrl = `${config.baseURL}/documents/${outputuuid}/${folderId}`;
         }
         console.log("URL",apiUrl)
         const response = await fetch(apiUrl);
@@ -341,77 +345,64 @@ const Documents = () => {
         console.log('Current Folder State:', state.currentFolder);
     }, [state.currentFolder]);
 
-    // Create Folder
+
     const handleCreateFolder = async (providedFolderName = null) => {
-            const nameToUse = providedFolderName || folderName.trim();
-
-            // console.log(nameToUse)
-        
-            // Trim and validate folder name input
-            if (!nameToUse) {
-                alert('Folder name is required.');
-                return null;
-            }
-
-            console.log('This is the folder name in the create folder', nameToUse);
+        if (isLoading) return; // Prevent multiple submissions
+        setIsLoading(true);
     
-
-            // Determine the parent folder ID
-            const parentFolderId = state.currentFolder?.id !== 'root' 
-                ? state.currentFolder.uuid 
-                : null;
-
-            // Construct folder payload
-            const newFolder = {
-                folderName: nameToUse,
-                parentFolderId: parentFolderId
-            };
-
-            // Determine the correct API endpoint
-            const folderUrl = parentFolderId
-                ? `${config.baseURL}/subFolders/${uuid}/${parentFolderId}`
-                : `${config.baseURL}/folders/${uuid}`;
-
-            try {
-                const response = await fetch(folderUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newFolder),
-                });
-
-                // Handle failed request
-                if (!response.ok) {
-                    const errorMessage = await response.text();
-                    console.error('Error response:', errorMessage);
-                    throw new Error('Failed to create folder.');
-                }
-
-                // Parse response and update state
-                const createdFolder = await response.json();
-                console.log('Folder created successfully:', createdFolder);
-
-                // Dispatch the appropriate action
-                dispatch({
-                    type: parentFolderId 
-                        ? ACTION_TYPES.CREATE_SUBFOLDER 
-                        : ACTION_TYPES.CREATE_FOLDER,
-                    payload: {
-                        ...createdFolder,
-                        parentFolderId: parentFolderId
-                    }
-                });
-
-                // Only reset form fields if we're using the state folder name
-                if (!providedFolderName) {
-                    setFolderName('');
-                    setModalStates((prev) => ({ ...prev, folderModal: false }));
-                }
-
-                return createdFolder; // Return the created folder
-            } catch (error) {
-                console.error('Error creating folder:', error.message);
-                    }
+        const nameToUse = providedFolderName || folderName.trim();
+        
+        if (!nameToUse) {
+            alert('Folder name is required.');
+            setIsLoading(false);
+            return;
+        }
+    
+        const parentFolderId = state.currentFolder?.uuid || null;
+    
+        const newFolder = {
+            folderName: nameToUse,
+            parentFolderId,
+        };
+    
+        const folderUrl = parentFolderId
+            ? `${config.baseURL}/subFolders/${outputuuid}/${parentFolderId}`
+            : `${config.baseURL}/folders/${outputuuid}`;
+    
+        try {
+            const response = await fetch(folderUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' ,
+                    'Authorization': 'Bearer ${userToken}'
+                },
+                
+                body: JSON.stringify(newFolder),
+            });
+    
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                console.error('Error response:', errorMessage);
+                throw new Error(errorMessage || 'Failed to create folder.');
+            }
+    
+            const createdFolder = await response.json();
+            console.log('Folder created successfully:', createdFolder);
+            dispatch({
+                type: parentFolderId ? ACTION_TYPES.CREATE_SUBFOLDER : ACTION_TYPES.CREATE_FOLDER,
+                payload: { ...createdFolder, parentFolderId },
+            });
+    
+            if (!providedFolderName) {
+                setFolderName('');
+                setModalStates((prev) => ({ ...prev, folderModal: false }));
+            }
+        } catch (error) {
+            console.error('Error creating folder:', error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
+
 
    // File upload handler function
     const handleFileUpload = async (file, options = {}) => {
@@ -425,16 +416,16 @@ const Documents = () => {
             formData.append('file', selectedFile);
 
             // Construct the appropriate URL based on folder hierarchy
-            let uploadUrl = `${config.baseURL}/documents/${uuid}`;
+            let uploadUrl = `${config.baseURL}/documents/${outputuuid}`;
         
             
             if (state.currentFolder?.uuid) {
                 if (state.currentFolder.parentFolderId) {
                     // For subfolders (nested folders)
-                    uploadUrl = `${config.baseURL}/documents/${uuid}/${state.currentFolder.parentFolderId}/${state.currentFolder.uuid}`;
+                    uploadUrl = `${config.baseURL}/documents/${outputuuid}/${state.currentFolder.parentFolderId}/${state.currentFolder.uuid}`;
                 } else {
                     // For root-level folders
-                    uploadUrl = `${config.baseURL}/documents/${uuid}/${state.currentFolder.uuid}`;
+                    uploadUrl = `${config.baseURL}/documents/${outputuuid}/${state.currentFolder.uuid}`;
                 }
             }
             console.log(uploadUrl)
@@ -519,10 +510,10 @@ const Documents = () => {
             console.log('Extracted UUID:', newFolderUuid);
     
             // Construct upload URL for files using the returned folder
-            let uploadUrl = `${config.baseURL}/documents/${uuid}/${newFolderUuid}`;
+            let uploadUrl = `${config.baseURL}/documents/${outputuuid}/${newFolderUuid}`;
             
             if (state.currentFolder.id !== "root" ) {
-                uploadUrl = `${config.baseURL}/documents/${uuid}/${state.currentFolder.uuid}/${newFolderUuid}`;
+                uploadUrl = `${config.baseURL}/documents/${outputuuid}/${state.currentFolder.uuid}/${newFolderUuid}`;
             }
 
             console.log(uploadUrl)
@@ -584,7 +575,7 @@ const Documents = () => {
     const handleView = async (file) => {
         try {
             // Ensure the project UUID is correctly defined
-            const viewUrl = `${config.baseURL}/documents/${uuid}/${file.uuid}`;
+            const viewUrl = `${config.baseURL}/${file.documentPath}`;
     
             // Open a new tab
             const newTab = window.open('', '_blank');
@@ -604,46 +595,154 @@ const Documents = () => {
     };
     
       // New function to handle file download
-      const handleDownload = async (file) => {
-        try {
-            const response = await fetch(`${config.baseURL}/download/${file.id}`);
-            if (!response.ok) throw new Error('Download failed');
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = file.documentName;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        } catch (error) {
-            console.error('Error downloading file:', error);
-            alert('Failed to download file');
+      const handleDownload = (file) => {
+        if (!file.documentPath) {
+            alert("No file available to download.");
+            return;
         }
+        
+        const filePath = `${config.baseURL}/download/${file.documentPath}`;
+        const link = document.createElement("a");
+        link.href = filePath;
+        link.download = file.documentName || "download";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
+
+
+    //   const handleDownload = async (file, e) => {
+    //     e.stopPropagation();
+    //     try {
+    //         console.log("Downloading:", file);
+    //         const response = await fetch(`${config.baseURL}/download/${file.documentPath}`);
+    // console.log("Download clicked for:", file.documentName)
+    //         if (!response.ok) {
+    //             throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    //         }
+    
+    //         console.log("Download successful, processing file...");
+    //         const blob = await response.blob();
+    //         const url = window.URL.createObjectURL(blob);
+    //         const a = document.createElement('a');
+    //         a.href = url;
+    //         a.download = file.documentName || "download";
+    //         document.body.appendChild(a);
+    //         a.click();
+    //         document.body.removeChild(a);
+    //         window.URL.revokeObjectURL(url);
+    //     } catch (error) {
+    //         console.error('Error downloading file:', error);
+    //         alert(`Failed to download file: ${error.message}`);
+    //     }
+    // };
+    
+    //   const handleDownload = async (file) => {
+    //     try {
+    //         const response = await fetch(`${config.baseURL}/download/${file.documentPath}`);
+    //         if (!response.ok) throw new Error('Download failed');
+
+    //         const blob = await response.blob();
+    //         const url = window.URL.createObjectURL(blob);
+    //         const a = document.createElement('a');
+    //         a.href = url;
+    //         a.download = file.documentName;
+    //         document.body.appendChild(a);
+    //         a.click();
+    //         window.URL.revokeObjectURL(url);
+    //         document.body.removeChild(a);
+    //     } catch (error) {
+    //         console.error('Error downloading file:', error);
+    //         alert('Failed to download file');
+    //     }
+    // };
 
     //handle file delete
-    const handleDeleteFile = async (fileId) => {
-        if (!confirm('Are you sure you want to delete this file?')) return;
+    const handleDeleteFile = async ( file) => {
+        console.log("Delete function received:", file.documentName  );
+    
+    if (!file) {
+        console.error("Invalid file object:", file);
+        alert("Cannot delete this file - missing file information");
+        return;
+    }
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to delete ${name} `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete',
+            cancelButtonText: 'Cancel'
+          });
+          
+          if (result.isConfirmed) {
+            setDeleting(uuid);
+        
 
         try {
-            const response = await fetch(`${config.baseURL}/documents/delete/${fileId}`, {
-                method: 'DELETE'
+            const response = await fetch(`${config.baseURL}/documents/delete/${outputuuid}/${file.uuid}`, {
+                method: 'GET'
             });
-
-            if (!response.ok) throw new Error('Delete failed');
-
-            dispatch({
-                type: ACTION_TYPES.DELETE_FILE,
-                payload: fileId
-            });
-        } catch (error) {
-            console.error('Error deleting file:', error);
-            alert('Failed to delete file');
-        }
+            console.log(response)
+            if (response.ok) {
+                // Update your file list state accordingly
+                setFileList((prev) => prev.filter((f) => f.id !== file.id));
+                // Show success message
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: `${name} has been successfully deleted.`,
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                });
+            } else {
+                console.error("Error deleting file:", await response.text());
+            }
+            } catch (error) {
+            console.error("Error deleting file:", error);
+            }
     };
+};
+// const handleDeleteFile = async (file, name) => {
+//     const result = await Swal.fire({
+//         title: 'Are you sure?',
+//         text: `You are about to delete ${name}`,
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonColor: '#d33',
+//         cancelButtonColor: '#3085d6',
+//         confirmButtonText: 'Yes, delete',
+//         cancelButtonText: 'Cancel'
+//     });
+    
+//     if (result.isConfirmed) {
+//         try {
+//             const response = await fetch(
+//                 `${config.baseURL}/documents/delete/${file.uuid}`, // Adjust URL as needed
+//                 {
+//                     method: "DELETE",
+//                 }
+//             );
+
+//             if (response.ok) {
+//                 // Update your file list state accordingly
+//                 setFileList((prev) => prev.filter((f) => f.id !== file.id));
+//                 // Show success message
+//                 Swal.fire({
+//                     title: 'Deleted!',
+//                     text: `${name} has been successfully deleted.`,
+//                     icon: 'success',
+//                     confirmButtonColor: '#3085d6',
+//                 });
+//             } else {
+//                 console.error("Error deleting file:", await response.text());
+//             }
+//         } catch (error) {
+//             console.error("Error deleting file:", error);
+//         }
+//     }
+// };
 
     // New function to handle folder deletion
     const handleDeleteFolder = async (folder) => {
@@ -695,6 +794,15 @@ const Documents = () => {
 
         fetchFolderContents(folder.uuid, options);
     };
+    
+    // In your component
+const toggleMenu = (fileId) => {
+    console.log("Toggling menu for file ID:", fileId); // Debug log
+    setMenuOpen((prev) => ({
+        ...prev, // Keep existing menu states
+        [fileId]: !prev[fileId]
+    }));
+};
 
     // Side Effects
     useEffect(() => {
@@ -730,33 +838,42 @@ const Documents = () => {
 
     const renderFiles = () => {
         const filesToRender = state.currentFolder?.files || [];
-        console.log(filesToRender)
-        return filesToRender.map(file => (
-       <>
-            <div key={file?.id} className={styles.inputFileCard}>
-                <div className={styles.fileInfo}>
-                    <FaRegFileAlt className={styles.inputFileCardIcon} />
-                    <span className={styles.fileName} onClick={() => handleView(file)}>
-                        {file?.documentName?.split('-').pop() || 'Unnamed Document'}
-                    </span>
-                </div>
-                <>
-                    <div className={styles.fileMenu} ref={menuRef}>
-                    <button onClick={() => setMenuOpen(menuOpen === file.id ? null : file.id)}>
-                        <FaEllipsisV />
-                    </button>
+        console.log("Available document Files:",filesToRender)
+        return filesToRender.map(file => {
+            console.log("Rendering file:", file); // Add this debug log
+            return (
+                <div key={file?.id || file?.documentName} className={styles.inputFileCard}>
+                    <div className={styles.fileInfo}>
+                        <FaRegFileAlt className={styles.inputFileCardIcon} />
+                        <span className={styles.fileName} onClick={() => handleView(file)}>
+                            {file?.documentName?.split('-').pop() || 'Unnamed Document'}
+                        </span>
                     </div>
-                    {menuOpen === file.id && (
-                <div className={styles.menuDropdown}>
-                    <button onClick={() => handleView(file)}>View</button>
-                    <button onClick={() => handleDownload(file)}>Download</button>
-                    <button onClick={() => handleDeleteFile(file)}>Delete</button>
+                    
+                    <div className={styles.fileMenu} ref={(el) => (menuRefs.current[file.id] = el)}>
+                        <button onClick={() => toggleMenu(file.id)}>
+                            <FaEllipsisV />
+                        </button>
+                        {menuOpen[file.id] && (
+                            <div 
+                                className={styles.menuDropdown}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    handleDownload(file); 
+                                }}>Download</button>
+                                <button onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    // console.log("Attempting to delete file:", file);
+                                    handleDeleteFile(file); 
+                                }}>Delete</button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-                )}
-                </>
-             </div>
-             </>
-        ));
+            );
+        });
     };
 
     return (
@@ -767,6 +884,7 @@ const Documents = () => {
         <div className={styles.inputDocumentSection}>
             
             <div className={styles.inputDocumentHeader}>
+            <div className={styles.inputDocumentHeaderLeft}>
                 {state.breadcrumbs.length > 0 && (
                     <button onClick={handleBackToParent}>
                         <FaArrowLeft /> Back
@@ -777,8 +895,10 @@ const Documents = () => {
                         ? state.currentFolder.name 
                         : 'Documents'}
                 </h2> */}
-
+</div>
+<div className={styles.inputDocumentHeaderRight}>
                 <UploadDropdown setModalStates={setModalStates} />
+            </div>
             </div>
 
             <div className={styles.inputDocumentCardsContainer}>
@@ -826,7 +946,10 @@ const Documents = () => {
                         onChange={(e) => setFolderName(e.target.value)}
                     />
                      <div className={styles.inputDocumentModalButtons}>
-                        <button type="submit">Create Folder</button>
+                        <button type="submit" disabled={isLoading}>
+    {isLoading ? 'Creating...' : 'Create Folder'}
+</button>
+
                         {/* <button onClick={handleCreateFolder}>Create</button> */}
                         <button onClick={() => setModalStates({ ...modalStates, folderModal: false })}>Cancel</button>
                     </div>

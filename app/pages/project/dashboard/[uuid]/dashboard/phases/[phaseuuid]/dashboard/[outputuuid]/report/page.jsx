@@ -233,7 +233,7 @@ const Report = () => {
            
             {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
             {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
-            <div className={styles.topButtons} style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" }}>
+            <div className={styles.topButtons} style={{ display: "flex", justifyContent: "flex-end", marginBottom: "10px" , marginRight: "20px"}}>
                 <button className={styles.addButton} onClick={() => setModalOpen(true)}>
                     <FaUpload size={10} /> Upload File
                 </button>

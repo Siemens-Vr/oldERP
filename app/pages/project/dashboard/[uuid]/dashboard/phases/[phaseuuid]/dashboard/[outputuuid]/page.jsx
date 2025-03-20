@@ -37,9 +37,17 @@ const OutputDetails = () => {
     }
   };
 
+
   useEffect(() => {
     fetchOutputData();
   }, [uuid]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
 
   return (
     <div className={styles.projectDetails}>
@@ -57,7 +65,7 @@ const OutputDetails = () => {
         </div>
         <div className={styles.card}>
           <h2>Completion Date</h2>
-          <p>{outputDetails.completionDate}</p>
+          <p>{formatDate(outputDetails.completionDate)}</p>
         </div>
         </div>
         <div className={styles.card}>

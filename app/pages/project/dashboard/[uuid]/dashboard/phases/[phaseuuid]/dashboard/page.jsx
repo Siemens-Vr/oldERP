@@ -153,7 +153,12 @@ const OutputsList = () => {
         }
     };
     
- 
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const options = { year: "numeric", month: "long", day: "numeric" };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+    
 
       const handleUpdateClick = (output) => {
         setSelectedOutput(output);
@@ -196,7 +201,7 @@ const OutputsList = () => {
                                 <td>{output.name}</td>
                                 <td>{output.description}</td>
                                 <td>{output.status}</td>
-                                <td>{output.completionDate}</td>
+                                <td>{formatDate(output.completionDate)}</td>
                                 <td>
                                     <ActionButton
                                         onEdit={() => handleUpdateClick(output)}
