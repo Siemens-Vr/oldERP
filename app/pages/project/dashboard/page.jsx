@@ -140,48 +140,64 @@ const result = await Swal.fire({
 
 
     const addProject = async (e) => {
-        e.preventDefault()
-        // Call the API to add the new project
-        try{
-        const response = await fetch(`${config.baseURL}/projects/create`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newProject),
-        });
-        console.log("New project data:", newProject);
-
-        if (response.ok) {
-            fetchProjects();
-            setShowProjectInput(false);
-            setSuccessMessage("Project added successfully");
-            setTimeout(() => setSuccessMessage(""), 3000);
-            setNewProject({
-                name: "",
-                startDate: "",
-                endDate: "",
-                status: "",
-                description:"",
-                
-            });
-        }  else {
-            const errorText = await response.text();
-            setErrorMessage("Failed to add project");
-            setTimeout(() => setErrorMessage(""), 3000);
-            setShowProjectInput(false);
-            console.error("Failed to add project:", errorText);
-            setAddProjectError("Failed to add project.");
-            setErrorMessage("Failed to add project");
+        e.preventDefault();
+    
+        if (!newProject.name.trim()) {
+            alert("Project name is required!");
+            return;
         }
-    }catch (error) {
-        console.error("Error in addProject function:", error);
-        setAddProjectError("Error occurred while adding project.");
-    }
-    // } finally {
-    //     setIsAdding(false);
-    // }
-};
+    
+        if (!newProject.startDate || !newProject.endDate) {
+            alert("Both Start Date and End Date are required.");
+            return;
+        }
+    
+        const startDate = new Date(newProject.startDate);
+        const endDate = new Date(newProject.endDate);
+    
+        // Check if End Date is before Start Date
+        if (endDate < startDate) {
+            alert("End Date cannot be before Start Date.");
+            return;
+        }
+    
+        try {
+            const response = await fetch(`${config.baseURL}/projects/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newProject),
+            });
+    
+            console.log("New project data:", newProject);
+    
+            if (response.ok) {
+                fetchProjects();
+                setShowProjectInput(false);
+                setSuccessMessage("Project added successfully");
+                setTimeout(() => setSuccessMessage(""), 3000);
+                setNewProject({
+                    name: "",
+                    startDate: "",
+                    endDate: "",
+                    status: "",
+                    description: "",
+                });
+            } else {
+                const errorText = await response.text();
+                console.error("Failed to add project:", errorText);
+                setAddProjectError("Failed to add project.");
+                setErrorMessage("Failed to add project");
+                setTimeout(() => setErrorMessage(""), 3000);
+                setShowProjectInput(false);
+            }
+        } catch (error) {
+            console.error("Error in addProject function:", error);
+            setAddProjectError("Error occurred while adding project.");
+        }
+    };
+    
 
     const handleMenuClick = (project) => {
         setSelectedProject(project); // Set the selected project for actions
@@ -314,7 +330,7 @@ const result = await Swal.fire({
                                                 <div className={styles.menuOptions}>
                                                     <button onClick={() => handleCardClick(project)}>View</button>
                                                     <button onClick={() => handleEdit(project)}>Edit</button>
-                                                    <button onClick={() => handleDelete(project.uuid, project.name)}>Delete</button>
+                                                    {/* <button onClick={() => handleDelete(project.uuid, project.name)}>Delete</button> */}
                                                 </div>
                                             )}
                                         </div>
@@ -381,6 +397,9 @@ const result = await Swal.fire({
                             className={styles.editInputField}
                         />
                         <div className={styles.editModalActions}>
+                        <button onClick={closeEditModal} className={styles.editCancelButton}>
+                                Cancel
+                            </button>
                             <button
                                 onClick={updateProject}
                                 disabled={isSaving} // Disable the button while saving
@@ -394,9 +413,7 @@ const result = await Swal.fire({
                                     'Save Changes'
                                 )}
                             </button>
-                            <button onClick={closeEditModal} className={styles.editCancelButton}>
-                                Cancel
-                            </button>
+                            
                         </div>
                     </div>
                 </div>
@@ -467,15 +484,16 @@ const result = await Swal.fire({
                             />
                         </div>
                         <div className={style.modalActions}>
-                        <button onClick={addProject} disabled={isAdding} className={style.addButton}>
-                                {isAdding ? "Adding..." : "Add"}
-                            </button>
-                            <button
+                        <button
                                 onClick={() => setShowProjectInput(false)}
-                                className={style.closeButton}
+                                className={style.closeButton1}
                             >
                                 Cancel
                             </button>
+                        <button onClick={addProject} disabled={isAdding} className={style.addButton1}>
+                                {isAdding ? "Adding..." : "Add"}
+                            </button>
+                            
                         </div>
                     </div>
                 </div>

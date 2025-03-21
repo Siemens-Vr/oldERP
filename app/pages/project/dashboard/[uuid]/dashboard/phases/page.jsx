@@ -55,65 +55,72 @@ const Phases = () => {
         });
       };
 
-    const addPhase = async () => {
+      const addPhase = async () => {
         console.log("UUID in addPhase:", uuid);
         if (!uuid) {
             console.error("UUID is undefined.");
             return;
         }
-        
-        if (newPhase.name.trim()) {
-            setIsAdding(true);
-            setAddPhaseError("");
-
-            try {
-                const payload = {
-                 
-                            name: newPhase.name,
-                            startDate: new Date(newPhase.startDate).toISOString(),
-                            endDate: new Date(newPhase.endDate).toISOString(),
-                            status: newPhase.status,
-                };
-console.log(payload)
-if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.status) {
-    showErrorAlert("All fields (Name, Start Date, End Date, and Status) are required.");
-    return;
-}
-
-                const response = await fetch(`${config.baseURL}/milestones/${uuid}/`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(payload),
+    
+        if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.status) {
+            showErrorAlert("All fields (Name, Start Date, End Date, and Status) are required.");
+            return;
+        }
+    
+        const startDate = new Date(newPhase.startDate);
+        const endDate = new Date(newPhase.endDate);
+    
+        // Check if End Date is before Start Date
+        if (endDate < startDate) {
+            showErrorAlert("End Date cannot be before Start Date.");
+            return;
+        }
+    
+        setIsAdding(true);
+        setAddPhaseError("");
+    
+        try {
+            const payload = {
+                name: newPhase.name,
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                status: newPhase.status,
+            };
+    
+            console.log(payload);
+    
+            const response = await fetch(`${config.baseURL}/milestones/${uuid}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+    
+            if (response.ok) {
+                fetchPhases();
+                setShowPhaseInput(false);
+                setSuccessMessage("Milestone added successfully");
+                setTimeout(() => setSuccessMessage(""), 3000);
+                setNewPhase({
+                    name: "",
+                    startDate: "",
+                    endDate: "",
+                    status: "",
                 });
-
-                if (response.ok) {
-                    fetchPhases();
-                    setShowPhaseInput(false);
-                    setSuccessMessage("Milestone added successfully");
-                    setTimeout(() => setSuccessMessage(""), 3000);
-                    setNewPhase({
-                        name: "",
-                        startDate: "",
-                        endDate: "",
-                        status: "",
-                    });
-                } else {
-                    const errorText = await response.text();
-                    console.error("Failed to add phase:", errorText);
-                    setAddPhaseError("Failed to add phase.");
-                }
-            } catch (error) {
-                console.error("Error in addPhase function:", error);
-                setAddPhaseError("Error occurred while adding phase.");
-            } finally {
-                setIsAdding(false);
+            } else {
+                const errorText = await response.text();
+                console.error("Failed to add phase:", errorText);
+                setAddPhaseError("Failed to add phase.");
             }
-        } else {
-            alert("Milestone name is required!");
+        } catch (error) {
+            console.error("Error in addPhase function:", error);
+            setAddPhaseError("Error occurred while adding phase.");
+        } finally {
+            setIsAdding(false);
         }
     };
+    
 
     const deletePhase = async (index, name) => {
         const phaseToDelete = phases[index];
@@ -193,31 +200,44 @@ if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.stat
     //     }
     // };
 
-    const updatePhase= async () => {
-        if (!editPhaseData.name.trim() ) {
+    const updatePhase = async () => {
+        if (!editPhaseData.name.trim()) {
             alert("Please provide all required details including name and status!");
             return;
         }
-
+    
+        if (!editPhaseData.startDate || !editPhaseData.endDate) {
+            alert("Please provide both Start Date and End Date.");
+            return;
+        }
+    
+        const startDate = new Date(editPhaseData.startDate);
+        const endDate = new Date(editPhaseData.endDate);
+    
+        // Check if End Date is before Start Date
+        if (endDate < startDate) {
+            alert("End Date cannot be before Start Date.");
+            return;
+        }
+        setAddPhaseError("");
+    
         try {
             const payload = {
                 phases: [
                     {
-                        phaseId: editPhaseData.uuid, 
-                        name: editPhaseData.name, 
-                        status: editPhaseData.status, 
-                        startDate: editPhaseData.startDate, 
-                        endDate: editPhaseData.endDate, // ✅ Renamed to match backend expectation
+                        phaseId: editPhaseData.uuid,
+                        name: editPhaseData.name,
+                        status: editPhaseData.status,
+                        startDate: startDate.toISOString(),
+                        endDate: endDate.toISOString(),
                         deliverables: editPhaseData.deliverables || [] // Ensure deliverables exist
                     }
                 ]
             };
-            
-            
+    
             console.log("Payload:", JSON.stringify(payload, null, 2));
-
             console.log("Updating phase with:", uuid, editPhaseData.uuid);
-
+    
             const response = await fetch(
                 `${config.baseURL}/milestones/update/${editPhaseData.uuid}`,
                 {
@@ -228,15 +248,14 @@ if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.stat
                     body: JSON.stringify(payload),
                 }
             );
-
+    
             if (response.ok) {
                 fetchPhases();
-                console.log("phase updated successfully");
+                console.log("Phase updated successfully");
                 setSuccessMessage("Phase updated successfully");
                 setTimeout(() => setSuccessMessage(""), 3000);
                 setEditPhase(null);
-                setEditPhaseData(null); 
-
+                setEditPhaseData(null);
             } else {
                 const responseText = await response.text();
                 console.error("Failed to update phase:", responseText);
@@ -245,6 +264,7 @@ if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.stat
             console.error("Error updating phase:", error);
         }
     };
+    
     return (
         // <div className= {styles.container}></div>
         <div className={styles.phases}>
@@ -351,15 +371,16 @@ if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.stat
                         </select>
                         </div>
                         <div className={styles.modalActions}>
-                            <button onClick={addPhase} disabled={isAdding} className={styles.addButton}>
-                                {isAdding ? "Adding..." : "Add"}
-                            </button>
-                            <button
+                        <button
                                 onClick={() => setShowPhaseInput(false)}
-                                className={styles.closeButton}
+                                className={styles.closeButton1}
                             >
                                 Cancel
                             </button>
+                            <button onClick={addPhase} disabled={isAdding} className={styles.addButton1}>
+                                {isAdding ? "Adding..." : "Add"}
+                            </button>
+                            
                         </div>
                         {addPhaseError && <p className={styles.errorMessage}>{addPhaseError}</p>}
                     </div>
@@ -432,16 +453,18 @@ if (!newPhase.name || !newPhase.startDate || !newPhase.endDate || !newPhase.stat
                         </div>
               
                         <div className={styles.modalActions}>
-                            <button onClick={updatePhase} className={styles.addButton}>
-                                Update
-                            </button>
-                            <button
+                        <button
                                 onClick={() => setEditPhaseData(null)}
-                                className={styles.closeButton}
+                                className={styles.closeButton1}
                             >
                                 Cancel
                             </button>
+                            <button onClick={updatePhase} className={styles.addButton1}>
+                                Update
+                            </button>
+                           
                         </div>
+                        {addPhaseError && <p className={styles.errorMessage}>{addPhaseError}</p>}
                     </div>
                 </div>
             )}
