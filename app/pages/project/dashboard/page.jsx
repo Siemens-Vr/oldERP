@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import ProjectCard from '@/app/components/project/projectCard';
 import styles from '@/app/styles/dashboards/project/dashboard.module.css';
@@ -17,7 +17,6 @@ const Dashboard = () => {
     const [editProjectData, setEditProjectData] = useState(null); // Project being edited
     const [isAdding, setIsAdding] = useState(false);
     const [searchTerm, setSearchTerm] = useState(searchParams.get('query') || '');
-    const [filter, setFilter] = useState('All Projects');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,6 +35,9 @@ const Dashboard = () => {
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [deleting, setDeleting] = useState(null); 
+    const menuRef = useRef(null);
+    const closeTimeoutRef = useRef(null);
+
 
     // Fetch projects from backend
     const fetchProjects = async () => {
@@ -68,37 +70,33 @@ const Dashboard = () => {
         router.replace(`${pathname}?${params.toString()}`);
     }
 
-    const filteredProjects = projects.filter((project) => {
-        if (!project.name || !project.status) return false;
-
-        const search = searchTerm.toLowerCase();
-        const projectName = project.name.trim().toLowerCase();
-        const projectStatus = project.status.trim().toLowerCase();
-
-        const matchStatus =
-            filter === 'All Projects' ||
-            (filter.toLowerCase() === 'active' && projectStatus === 'progress') ||
-            projectStatus === filter.toLowerCase();
-        const matchSearch = projectName.includes(search);
-        return matchStatus && matchSearch;
-    });
-
-    const groupedProjects = {
-        todo: filteredProjects.filter((project) => project.status.trim().toLowerCase() === 'todo'),
-        active: filteredProjects.filter(
-            (project) =>
-                project.status.trim().toLowerCase() === 'active' ||
-                project.status.trim().toLowerCase() === 'progress'
-        ),
-        completed: filteredProjects.filter((project) => project.status.trim().toLowerCase() === 'completed'),
-    };
 
     const handleCardClick = (project) => {
         console.log(project.uuid)
         router.push(`/pages/project/dashboard/${project.uuid}/dashboard`);
+        clearTimeout(closeTimeoutRef.current); 
     };
 
 
+    const handleOutsideClick = (event) => {
+        if (
+            menuRef.current &&
+            !menuRef.current.contains(event.target)
+        ) {
+            closeTimeoutRef.current = setTimeout(() => {
+                setSelectedProject(null);
+            }, 3000); 
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+            clearTimeout(closeTimeoutRef.current); // Clean up on unmount
+        };
+    }, []);
+    
     const handleDelete = async (uuid, name) => {
         // Call the delete API endpoint
 const result = await Swal.fire({
@@ -127,7 +125,7 @@ const result = await Swal.fire({
             console.error('Failed to delete the project');
         }
         setSelectedProject(null); // Reset selected project
-    };
+    }
 };
 
     const openModal = () => setIsModalOpen(true);
@@ -211,6 +209,7 @@ const result = await Swal.fire({
         console.log(project)
         setEditProjectData(project);
         setEditModalOpen(true);
+        clearTimeout(closeTimeoutRef.current); 
     };
 
 // Close edit modal
@@ -267,13 +266,8 @@ const result = await Swal.fire({
 
 
 
-
     return (
         <div className={styles.dashboardContainer}>
-            {/* <div className={styles.breadcrumb}>
-                <span><a href="/pages/project/dashboard">Dashboard</a> Projects</span>
-            </div> */}
-
             <div className={styles.mainContent}>
                 <header className={styles.header}>
                     <h1>Project Management Dashboard</h1>
@@ -287,60 +281,43 @@ const result = await Swal.fire({
                             placeholder="Search projects..."
                             className={styles.searchInput}
                         />
-                        <select
-                            value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
-                            className={styles.filterDropdown}
-                        >
-                            <option value="All Projects">All Projects</option>
-                            <option value="Todo">Todo</option>
-                            <option value="Active">Active</option>
-                            <option value="Completed">Completed</option>
-                        </select>
+                  
                         <button className={styles.addProjectBtn}  onClick={() => setShowProjectInput(true)}>
-                            + Add Project
+                            Add Project
                         </button>
                     </div>
                 </header>
 
                 <section className={styles.boardView}>
-                    {Object.entries(groupedProjects).map(([status, projects]) => (
-                        <div className={styles.column} key={status}>
-                            <h2>{status.charAt(0).toUpperCase() + status.slice(1)}</h2>
-                            <div className={styles.cardContainer}>
-                                {projects.length > 0 ? (
-                                    projects.map((project) => (
-                                        <div key={project.uuid} className={styles.projectCard}>
-                                            <div className={styles.cardContent} onClick={() => handleCardClick(project)}>
-                                                <ProjectCard
-                                                    title={project.name}
-                                                    status={project.status}
-                                                    assignees={project.assignees}
-                                                    startDate={project.startDate}
-                                                    endDate={project.endDate}
-                                                />
-                                                <div className={styles.menuButton} onClick={(e) => {
-                                                    e.stopPropagation(); // Prevent card click
-                                                    handleMenuClick(project);
-                                                }}>
-                                                    &#x022EE; {/* Three dots icon */}
-                                                </div>
-                                            </div>
-                                            {selectedProject === project && (
-                                                <div className={styles.menuOptions}>
-                                                    <button onClick={() => handleCardClick(project)}>View</button>
-                                                    <button onClick={() => handleEdit(project)}>Edit</button>
-                                                    {/* <button onClick={() => handleDelete(project.uuid, project.name)}>Delete</button> */}
-                                                </div>
-                                            )}
+                    <div className={styles.cardContainer}>
+                        {projects.length > 0 ? (
+                            projects.map((project) => (
+                                <div key={project.uuid} className={styles.projectCard} ref={menuRef}>
+                                    <div className={styles.cardContent} onClick={() => handleCardClick(project)}>
+                                        <ProjectCard
+                                            title={project.name}
+                                            
+                                        />
+                                        <div className={styles.menuButton} onClick={(e) => {
+                                            e.stopPropagation(); // Prevent card click
+                                            handleMenuClick(project);
+                                        }}>
+                                            &#x022EE; {/* Three dots icon */}
                                         </div>
-                                    ))
-                                ) : (
-                                    <p>No {status} projects available.</p>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                                    </div>
+                                    {selectedProject === project && (
+                                        <div className={styles.menuOptions}>
+                                            <button onClick={() => handleCardClick(project)}>View</button>
+                                            <button onClick={() => handleEdit(project)}>Edit</button>
+                                            <button onClick={() => handleDelete(project.uuid, project.name)}>Delete</button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <p>No  projects available.</p>
+                        )}
+                    </div>
                 </section>
             </div>
             {editModalOpen && editProjectData && (

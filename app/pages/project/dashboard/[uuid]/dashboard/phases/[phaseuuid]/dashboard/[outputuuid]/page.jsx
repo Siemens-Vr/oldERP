@@ -55,14 +55,18 @@ const OutputDetails = () => {
         <Navbar />
         </nav>
       <div className={styles.projectDetail}>
-        <div className={styles.card}>
-          <h2>Name</h2>
-          <p>{outputDetails.name}</p>
+      <div className={styles.card}>
+        <div className={styles.cardContent}>
+            <div>
+                <h2>Name</h2>
+                <p>{outputDetails.name}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+                <h2>Status</h2>
+                <p>{outputDetails.status}</p>
+            </div>
         </div>
-        <div className={styles.card}>
-          <h2>Status</h2>
-          <p>{outputDetails.status}</p>
-        </div>
+    </div>
         <div className={styles.card}>
           <h2>Completion Date</h2>
           <p>{formatDate(outputDetails.completionDate)}</p>

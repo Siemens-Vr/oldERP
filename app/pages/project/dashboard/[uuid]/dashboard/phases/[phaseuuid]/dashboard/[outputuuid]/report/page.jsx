@@ -156,7 +156,7 @@ const Report = () => {
         } catch (error) {
             console.error("Error deleting file:", error);
         }
-    };
+    }
 };
     // };
 

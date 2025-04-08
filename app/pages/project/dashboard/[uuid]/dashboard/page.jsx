@@ -70,19 +70,24 @@ const Details = () => {
             </div>
             </div>
             <div className={styles.projectDetail}>
-            <div className={styles.card}>
+    <div className={styles.card}>
+        <div className={styles.cardContent}>
+            <div>
                 <h2>Name</h2>
                 <p>{projectDetails.projectName}</p>
             </div>
-            <div className={styles.card}>
+            <div style={{ textAlign: 'right' }}>
                 <h2>Status</h2>
                 <p>{projectDetails.status}</p>
             </div>
-            <div className={styles.card}>
-                <h2>Description</h2>
-                <p>{projectDetails.description}</p>
-            </div>
-            </div>
+        </div>
+    </div>
+    <div className={styles.card}>
+        <h2>Description</h2>
+        <p>{projectDetails.description}</p>
+    </div>
+</div>
+
           
             <div>
             <div className={styles.card}>

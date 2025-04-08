@@ -3,6 +3,8 @@
     padding: 20px;
     border-radius: 10px;
     margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
   }
   
   .top {
@@ -324,3 +326,16 @@
     max-width: 400px;
   }
   
+  .backButton {
+    margin-left: 20px;
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #007bff;
+    margin-right: auto;
+  }
+  
+  .backButton:hover {
+    text-decoration: underline;
+  }

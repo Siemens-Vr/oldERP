@@ -3,6 +3,7 @@
     flex-direction: column;
     gap: 30px;
     margin-top: 20px;
+    padding: 20px;
 }
   
 .formContainer {
@@ -121,3 +122,16 @@
     font-size: 14px;
     margin-top: 5px; /* Add spacing if N/A is displayed */
 }
+.backButton {
+    margin-left: 20px;
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #007bff;
+    margin-right: auto;
+  }
+  
+  .backButton:hover {
+    text-decoration: underline;
+  }

@@ -120,7 +120,7 @@ const PersonnelPage = () => {
               if (result.isConfirmed) {
                 setDeleting(uuid);
       
-    if (confirmDelete) {
+  
       try {
         const response = await fetch(`${config.baseURL}/personnels/project/${personneluuid}/delete`, {
           method: "GET",
@@ -144,8 +144,8 @@ const PersonnelPage = () => {
         console.error("Error deleting personnel:", error);
         alert("Failed to delete personnel. Please try again.");
       }
-    }
-  };
+    
+  }
 };
 
   const handleUpdateClick = (personnel) => {

@@ -181,8 +181,16 @@ const TransportPage = () => {
     router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${phaseuuid}/dashboard/${outputuuid}/expenses/transport/${id}`);
     
   };
+  const handleBack = () => {
+    router.back(); // Go to the previous page
+  };
 
   return (
+    <div>
+      <button className={styles.backButton} onClick={handleBack}>
+          Back
+        </button>
+    
     <div className={styles.container}>
       <div className={styles.top}>
         <Search placeholder="Search for travel..." />
@@ -243,6 +251,7 @@ const TransportPage = () => {
           onSave={handleSavePopup}
         />
       )}
+    </div>
     </div>
   );
 };

@@ -164,7 +164,7 @@ const Phases = () => {
                           });
             } else {
                 console.error("Failed to delete phase");
-                showErrorAlert(errorData.error || 'Failed to delete phase.');
+                // showErrorAlert(error || 'Failed to delete phase.');
             }
         } catch (error) {
             console.error("Error deleting phase:", error);
@@ -279,42 +279,56 @@ const Phases = () => {
                 </button>
             </div>
             
-            <div className={styles.phaseCards}>
+            <div className="flex p-6 flex-wrap gap-6">
                 {phases.map((phase, index) => (
-                    <div key={index} className={styles.phaseCard}>
-                        <div className={styles.top}>
-                            <h3>{phase.name}</h3>
-                            <div className={styles.cardActions}>
-                            <FaEye
-                                    className={styles.viewIcon}
-                                    onClick={() => router.push(`/pages/project/dashboard/${uuid}/dashboard/phases/${phase.uuid}/dashboard`)}
-                                />
-                                <FaEdit
-                                    className={styles.editIcon}
-                                    onClick={() => setEditPhaseData(phase)}
-                                />
-                                <FaTrash
-                                    className={styles.deleteIcon}
-                                    onClick={() => deletePhase(index, phase.name)}
-                                />
-                            </div>
-                        </div>
+                    <div
+                    key={index}
+                    className="bg-[#1a253a] rounded-lg p-4 w-[300px] h-[200px] shadow-md cursor-pointer transition-transform transform hover:scale-105 hover:shadow-lg"
+                    >
+                    <div className="flex justify-between items-center mb-2 border-b border-gray-500 pb-2">
+                        <h3 className="capitalize text-xl font-semibold text-[#1c86ee]">
+                        {phase.name}
+                        </h3>
+                        <div className="flex gap-3">
+                        <FaEye
+                            className="text-gray-400 hover:text-gray-200 cursor-pointer"
+                            onClick={() =>
+                            router.push(
+                                `/pages/project/dashboard/${uuid}/dashboard/phases/${phase.uuid}/dashboard`
+                            )
+                            }
+                        />
+                        <FaEdit
+                            className="text-green-400 hover:text-green-300 cursor-pointer"
+                            onClick={() => setEditPhaseData(phase)}
+                        />
+                        <FaTrash
+                            className="text-red-400 hover:text-red-300 cursor-pointer"
+                            onClick={() => deletePhase(index, phase.name)}
+          />
+        </div>
+      </div>
+      <div className="flex flex-col gap-1 mt-2 text-gray-300">
+        <p>
+          <strong>Start Date:</strong>{" "}
+          {phase.startDate
+            ? new Date(phase.startDate).toLocaleDateString()
+            : ""}
+        </p>
+        <p>
+          <strong>End Date:</strong>{" "}
+          {phase.endDate
+            ? new Date(phase.endDate).toLocaleDateString()
+            : ""}
+        </p>
+        <p>
+          <strong>Status:</strong> {phase.status}
+        </p>
+      </div>
+    </div>
+  ))}
+</div>
 
-                        <p>
-                        <strong>Start Date:</strong>{" "}
-                        {phase.startDate ? new Date(phase.startDate).toLocaleDateString() : ""}
-                        </p>
-                        <p>
-                        <strong>End Date:</strong>{" "}
-                        {phase.endDate ? new Date(phase.endDate).toLocaleDateString() : ""}
-                        </p>
-                        <p>
-                            <strong>Status:</strong> {phase.status}
-                        </p>
-
-                    </div>
-                ))}
-            </div>
 
 
 

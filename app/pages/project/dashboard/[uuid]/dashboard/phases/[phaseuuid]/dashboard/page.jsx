@@ -4,7 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { config } from "/config";
 import styles from "@/app/styles/supplier/supplier.module.css";
 import style from "@/app/styles/project/project/project.module.css";
-import Search from "@/app/components/search/searchFilter";
+import Search from "@/app/components/search/search"
+// import Search from "@/app/components/search/searchFilter";
 import AddOutputModal from '@/app/components/project/output/AddOutput';
 import Link from "next/link";
 import UpdateOutputPopup from '@/app/components/project/output/update';

@@ -111,8 +111,17 @@ const SingleTransportPage = ({ params }) => {
   const getDateValue = (dateField) => {
     return transport[dateField] || "N/A";
   };
+  const handleBack = () => {
+    router.back(); // Go to the previous page
+  };
 
   return (
+    <div>
+        <button className={styles.backButton} onClick={handleBack}>
+          Back
+        </button>
+    
+    
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>{transport.destination}</h1>
@@ -247,6 +256,7 @@ const SingleTransportPage = ({ params }) => {
           onSave={handleSavePopup}
         />
       )}
+    </div>
     </div>
   );
 };

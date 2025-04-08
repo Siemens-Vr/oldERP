@@ -166,7 +166,15 @@ const ProcurementPage = () => {
     return <div className={styles.loading}>Loading...</div>;
   }
 
+  const handleBack = () => {
+    router.back(); // Go to the previous page
+  };
+
   return (
+    <div>
+      <button className={styles.backButton} onClick={handleBack}>
+          Back
+        </button>
     <div className={styles.container}>
       <div className={styles.top}>
         <Search placeholder="Search for item..." />
@@ -223,6 +231,7 @@ const ProcurementPage = () => {
           onSave={handleSavePopup}
         />
       )}
+    </div>
     </div>
   );
 };

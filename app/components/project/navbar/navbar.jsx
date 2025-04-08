@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useParams } from "next/navigation"; 
 import styles from "@/app/styles/project/navbar/navbar.module.css"; 
 
-const Navbar = ({ }) => {
+const Navbar = () => {
   const pathname = usePathname(); 
   const params = useParams();
   const { uuid, phaseuuid, outputuuid } = params;
